@@ -1,0 +1,42 @@
+\cleardoublepage
+%\pagebreak
+\phantomsection
+\begin{appendices}
+	\chapter{}
+	\section{Proof of correctness for BFS}\label{appendix:bfs:correctness}
+		We'll prove the correctness of BFS using mathematical induction.
+		\begin{itemize}
+			\item \textit{Inductive hypothesis}: For all nodes at distance
+			$k$ from the source, BFS correctly computes $distance[v] = k$.
+			\item \textit{Base case}: The source node $s$ has $distance[s] = 0$.
+			\item \textit{Induction step}: Assume the hypothesis is true for nodes at a distance $k$ from $s$. Then their neighbours (nodes at distance $k + 1$) are enqueued and assigned $distance = k + 1$ before any nodes at $distance > k + 1$ are processed.
+			\item \textit{Conclusion}: BFS computes the shortest possible path for all reachable nodes.
+		\end{itemize}
+	\section{Proof of complexity for BFS}\label{appendix:bfs:complexity}
+		Let us assume a graph $G(V, E)$ with $V$ vertices and $E$ edges.
+	\begin{itemize}
+		\item Mark all $V$ vertices as unvisited. This takes $O(V)$ time.
+		\item Each vertex enters the queue once (when discovered) and exits the queue once. Enqueue and dequeue operations are $O(1)$, so processing all vertices takes $O(V)$ time.
+		\item For each dequeued vertex $u$, iterate through its adjacency list to check all edges $(u,v)$.
+		\item In a directed graph, each edge $(u,v)$ is processed once. In an undirected graph, each edge $(u,v)$ is stored twice (once for $u$ and once for $v$), but each is still processed once during BFS.
+		\item Summing over all vertices, the total edge-processing time is $O(E)$.
+	\end{itemize}
+		Thus, the overall time complexity is $O(V+E)$.
+	\section{Proof of correctness for Bellman-Ford}\label{appendix:bellford:correctness}
+	We'll prove the correctness of Bellman-Ford algorithm using mathematical induction.
+	\begin{itemize}
+		\item \textit{Inductive hypothesis}: After $k$ iterations, $distance[v]$ is the length of the shortest path from $s$ to $v$ using at most $k$ edges.
+		\item \textit{Base case}: After 0 iterations, $distance[s]=0$ (correct), and $distance[v] = \infty$ for all $v \neq s$ (no paths have been explored yet).
+		\item \textit{Induction step}: Consider the $(k+1)^{th}$ iteration. For each edge $(u,v)$, if $distance[u]+w(u,v)<distance[v]$, then $distance[v]$ is updated to $distance[u]+w(u,v)$. This ensures that after $k+1$ iterations, $distance[v]$ is the length of the shortest path using at most $k+1$ edges.
+		\item \textit{Conclusion}: After $V-1$ iterations, all shortest paths with at most $V-1$ edges have been found. Since a shortest path in a graph with $V$ vertices cannot have more than $V-1$ edges, the algorithm is correct.
+		\item \textit{Negative cycle detection}: After $V - 1$ iterations, if any $distance[v]$ can still be improved (i.e. $distance[u]+w(u,v)<distance[v]$ for some edge $(u,v)$), then the graph contains a negative-weight cycle reachable from $s$.
+	\end{itemize}
+	\section{Proof of complexity for Bellman-Ford}\label{appendix:bellford:complexity}
+	Let us assume a graph $G(V, E)$ with $V$ vertices and $E$ edges.
+	\begin{itemize}
+		\item Set $distance[s]=0$ and $distance[v]=\infty$ for all $v \neq s$. This takes $O(V)$ time.
+		\item Relax all $E$ edges, repeated $V - 1$ times. Each relaxation takes $O(1)$ time. This takes a total time of $O(V \cdot E)$.
+		\item For negative cycle detection, relax all the edges once more. This takes $O(E)$ time.
+	\end{itemize}
+	The dominant term is the relaxation step, which takes $O(V \cdot E)$ time, hence the overall complexity of the algorithm is $O(V \cdot E)$.
+\end{appendices}
