@@ -47,7 +47,7 @@
 			\end{enumerate}
 			Refer to \textbf{Appendix \ref{appendix:bellford:correctness}} for a formal proof of correctness of this algorithm.
 		\subsubsection{Complexity}
-			When finding the shortest path between a pair of vertices in a graph, the worst-case time complexity for the Bellman-Ford algorithm is $O(V \cdot E)$ (see \textbf{Appendix \ref{appendix:bellford:complexity}} for a formal proof). \\ \\
+			When finding the shortest path from a source vertex to every other vertex in a graph, the worst-case time complexity for the Bellman-Ford algorithm is $O(V \cdot E)$ (see \textbf{Appendix \ref{appendix:bellford:complexity}} for a formal proof). \\ \\
 			The space complexity for Bellman-Ford is $O(V)$ since we use an array of size $V$ to store all the shortest-path distances.
 		\subsubsection{Pros and Cons}
 			\begin{itemize}
@@ -57,23 +57,27 @@
 			\end{itemize}
 	\subsection{Dijkstra's Algorithm}
 		\subsubsection{Introduction}
-		
+			Dijkstra's algorithm is a greedy algorithm used to find the shortest paths from a single source vertex to all other vertices in a weighted graph with non-negative edge weights. It was conceived by computer scientist Edsger W. Dijkstra in 1956 and published three years later.
 		\subsubsection{Algorithm}
 		\begin{enumerate}
-			\item 
-			\item 
-			\item 
-			\item 
-			\item 
+			\item Create an array $distance$ of size $V$ to store the shortest path distances and a priority queue $Q$ containing all vertices, prioritized by $distance$.
+			\item Assign $distance[u] = \infty$ for all vertices except the source vertex $s$, where $distance[s] = 0$.
+			\item While $Q$ is not empty:
+				\begin{itemize}
+					\item Extract the vertex u u with the smallest distance distance from $Q$.
+					\item For each neighbor $v$ of $u$, if $distance[u] + w(u,v) < distance[v]$: update $distance[v]=distance[u]+w(u,v)$ and the priority of $v$ in $Q$.
+				\end{itemize}
+			\item The algorithm ends when $Q$ is empty. The distance distance array contains the shortest path distances from $s$ to all other vertices.
 		\end{enumerate}
-		
+			Refer to \textbf{Appendix \ref{appendix:dijkstra:correctness}} for a formal proof of correctness of this algorithm.
 		\subsubsection{Complexity}
-		
+			When finding the shortest path from a source vertex to every other vertex in a graph, the worst-case time complexity for the Dijkstra's algorithm is $O((V+E)\log{V})$ using a binary heap or $O(V\log{V}+E)$ using a Fibonacci heap. (see \textbf{Appendix \ref{appendix:dijkstra:complexity}} for a formal proof). \\ \\
+			The space complexity for Dijkstra's is $O(V)$ since we use an array of size $V$ to store all the shortest-path distances.
 		\subsubsection{Pros and Cons}
 		\begin{itemize}
-			\item 
-			\item 
-			\item
+			\item Can cover a large area of a graph, which is useful when there are multiple target nodes.
+			\item Can't calculate the shortest paths correctly if the graph has negative weights.
+			\item Has linearithmetic complexity when implemented using a priority queue.
 		\end{itemize}
 		
 
