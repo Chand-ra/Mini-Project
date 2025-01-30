@@ -56,4 +56,20 @@
 		\item For a binary heap, $V \times \mbox{Extract-Min}$ takes $O(V\log{V})$ time and $E \times \mbox{Decrease-Key}$ takes $O(E\log{V})$ time $\to$ a total complexity of $O((V + E)\log{V})$
 		\item For a fibonacci heap, $V \times \mbox{Extract-Min}$ takes $O(V\log{V})$ time and $E \times \mbox{Decrease-Key}$ takes $O(E)$ time $\to$ a total complexity of $O(V\log{V} + E)$.
 	\end{itemize}
+	\section{Proof of correctness for A* search}\label{appendix:astar:correctness}
+	We'll prove the correctness of A* search algorithm using mathematical induction. Let us define the following: \\
+	$f(s)$: Estimated total cost of the path from the start node to the goal node, passing through the current node. \\
+	$g(s)$: Cost of the shortest path from the start node to the current node. \\
+	$h(s)$: Heuristic estimate of the cost from the current node to the goal node.
+	\begin{itemize}
+		\item \textit{Inductive hypothesis}: At each step, the node $u$ with the smallest $f(u)$ is the one with the smallest estimated total cost to the goal.
+		\item \textit{Base case}: Initially, $g(s)=0$ and $f(s)=h(s)$. The start node $s$ is correctly prioritized.
+		\item \textit{Induction step}: 
+			\begin{itemize}
+				\item When $u$ is extracted, its $g(u)$ is the true shortest path cost from $s$ to $u$ (due to admissibility and consistency).
+				\item For each neighbor $v$, $f(v)=g(v)+h(v)$ is updated to reflect the best-known path to $v$.
+				\item The algorithm continues to explore nodes in order of increasing $f(v)$, ensuring the shortest path is found.
+			\end{itemize}
+		\item \textit{Conclusion}: If the goal $t$ is reached, $g(t)$ is the true shortest path cost and If $Q$ becomes empty, no path exists.
+	\end{itemize}
 \end{appendices}

@@ -79,12 +79,54 @@
 			\item Can't calculate the shortest paths correctly if the graph has negative weights.
 			\item Has linearithmetic complexity when implemented using a priority queue.
 		\end{itemize}
-		
 
 \section{Advanced shortest path algorithms}
-\subsection{A* Search Algorithm}
-\subsection{Bidirectional Search}
-
+	\subsection{A* Search Algorithm}
+		\subsubsection{Introduction}
+			A* search is a heuristic-based algorithm used to find the shortest path from a start node to a goal node in a weighted graph. It combines the strengths of Dijkstra's algorithm (guaranteed shortest path) and greedy best-first search (efficient exploration using heuristics). It was first published by Peter Hart, Nils Nilsson, and Bertram Raphael at Stanford Research Institute in 1968.
+		\subsubsection{Algorithm}
+			\begin{enumerate}
+				\item Create a priority queue $Q$ to store nodes to explore, prioritized by $f(v)=g(v)+h(v)$, where
+					\begin{itemize}
+						\item $g(v)$: Cost of the shortest path from $s$ to $v$ found so far.
+						\item $h(v)$: Heuristic estimate of the cost from $v$ to $t$.
+					\end{itemize}
+				\item Set $g(s)=0$ and $f(s)=h(s)$.
+				\item Insert $s$ into $Q$.
+				\item Create a set $visited$ to track visited nodes
+				\item While $Q$ is not empty:
+					\begin{enumerate}
+						\item Extract the node $u$ with the smallest $f(u)$ from $Q$.
+						\item If $u=t$, return the path from $s$ to $t$.
+						\item Mark $u$ as visited.
+						\item For each neighbor $v$ of $u$, if $v$ is not visited:
+							\begin{itemize}
+								\item Compute $g_{tentative} = g(u) + w(u,v)$.
+								\item If $g_{tentative} < g(v)$ or $v$ is not in $Q$:
+									\begin{itemize}
+										\item Update $g(v)=g_{tentative}$.
+										\item Update $f(v)=g(v)+h(v)$.
+										\item Insert $v$ into $Q$ (or update its priority if already in $Q$).
+									\end{itemize}
+							\end{itemize}
+					\end{enumerate}
+				\item If $Q$ becomes empty and the goal $t$ has not been reached, no path exists.
+			\end{enumerate}
+			A* search is correct if the heuristic $h(v)$ is admissible (never overestimates the true cost to the goal) and consistent (satisfies the triangle inequality: $h(u) \leq w(u,v)+h(v)$ for all edges $(u,v))$. For a formal proof of correctness, refer to \textbf{Appendix \ref{appendix:astar:correctness}}.
+		\subsubsection{Complexity}
+		Since A* Search is basically an 'informed' version of Dijkstra's algorithm, the space complexity for A* search is the same as for Dijkstra's, which is $O(V)$.
+		The time complexity, however, depends on the heuristic function and is equal to Dijsktra's when the heuristic $h(v) = 0$.
+		\subsubsection{Pros and Cons}
+			\begin{itemize}
+				\item Compared to uninformed search algorithms, A* explores significantly fewer nodes leading to faster search times. 
+				\item By maintaining a priority queue, A* only needs to store a limited number of nodes in memory, making it suitable for large search spaces.
+				\item Performance heavily depends on the quality of the heuristic function. Thus, A* search is not ideal when a good heuristic cannot be easily defined or when heuristic calculations are complicated.
+			\end{itemize}
+	\subsection{Bidirectional Search}
+		\subsubsection{Introduction}
+		\subsubsection{Algorithm}
+		\subsubsection{Complexity}
+		\subsubsection{Pros and Cons}
 \section{Preprocessing techniques}
 \subsection{Contraction Hierarchies}
 \subsection{ALT Algorithm}
