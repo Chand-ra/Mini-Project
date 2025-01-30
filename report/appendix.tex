@@ -39,4 +39,37 @@
 		\item For negative cycle detection, relax all the edges once more. This takes $O(E)$ time.
 	\end{itemize}
 	The dominant term is the relaxation step, which takes $O(V \cdot E)$ time, hence the overall complexity of the algorithm is $O(V \cdot E)$.
+	\section{Proof of correctness for Dijkstra's}\label{appendix:dijkstra:correctness}
+	We'll prove the correctness of Dijkstra's algorithm using mathematical induction.
+	\begin{itemize}
+		\item \textit{Inductive hypothesis}: After $k$ vertices are extracted from $Q$, their distance distance values are the correct shortest path distances from $s$.
+		\item \textit{Base case}: Initially, $distance[s]=0$ (correct), and $distance[v]=\infty$ for all $v \neq s$ (no paths have been explored yet).
+		\item \textit{Induction step}: Let $u$ be the $(k+1)^{th}$ vertex extracted from $Q$. Suppose there exists a shorter path to $u$ not using the extracted vertices. This path must leave the set of extracted vertices at some edge $(x,y)$, but since $w(x,y) \geq 0$, this would imply $distance[y]<distance[u]$, contradicting $u$’s extraction.
+		\item \textit{Conclusion}: After all vertices are processed, the $distance$ array contains the correct shortest path distances.
+	\end{itemize}
+	\section{Proof of complexity for Dijkstra's}\label{appendix:dijkstra:complexity}
+	Let us assume a graph $G(V, E)$ with $V$ vertices and $E$ edges. In a priority-queue based implementation of the algorithm,
+	\begin{itemize}
+		\item Each vertex is extracted once ($V \times \mbox{Extract-Min})$ and each edge is relaxed once $(E \times \mbox{Decrease-Key})$.
+		\item Extract-Min and Decrease-Key take $O(\log{V})$ time in a binary heap.
+		\item Extract-Min and Decrease-Key take $O(\log{V})$ and $O(1)$ time respectively in a fibonacci heap.
+		\item For a binary heap, $V \times \mbox{Extract-Min}$ takes $O(V\log{V})$ time and $E \times \mbox{Decrease-Key}$ takes $O(E\log{V})$ time $\to$ a total complexity of $O((V + E)\log{V})$
+		\item For a fibonacci heap, $V \times \mbox{Extract-Min}$ takes $O(V\log{V})$ time and $E \times \mbox{Decrease-Key}$ takes $O(E)$ time $\to$ a total complexity of $O(V\log{V} + E)$.
+	\end{itemize}
+	\section{Proof of correctness for A* search}\label{appendix:astar:correctness}
+	We'll prove the correctness of A* search algorithm using mathematical induction. Let us define the following: \\
+	$f(s)$: Estimated total cost of the path from the start node to the goal node, passing through the current node. \\
+	$g(s)$: Cost of the shortest path from the start node to the current node. \\
+	$h(s)$: Heuristic estimate of the cost from the current node to the goal node.
+	\begin{itemize}
+		\item \textit{Inductive hypothesis}: At each step, the node $u$ with the smallest $f(u)$ is the one with the smallest estimated total cost to the goal.
+		\item \textit{Base case}: Initially, $g(s)=0$ and $f(s)=h(s)$. The start node $s$ is correctly prioritized.
+		\item \textit{Induction step}: 
+			\begin{itemize}
+				\item When $u$ is extracted, its $g(u)$ is the true shortest path cost from $s$ to $u$ (due to admissibility and consistency).
+				\item For each neighbor $v$, $f(v)=g(v)+h(v)$ is updated to reflect the best-known path to $v$.
+				\item The algorithm continues to explore nodes in order of increasing $f(v)$, ensuring the shortest path is found.
+			\end{itemize}
+		\item \textit{Conclusion}: If the goal $t$ is reached, $g(t)$ is the true shortest path cost and If $Q$ becomes empty, no path exists.
+	\end{itemize}
 \end{appendices}
