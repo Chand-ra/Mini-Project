@@ -1,43 +1,7 @@
 \chapter{Problem Definition}
 
+The primary objective of this project is to develop and analyze a \textbf{hybrid shortest path algorithm} that integrates \textbf{preprocessing and efficient querying} to optimize route computation in large-scale networks. \\ \medskip
 
-%\section{Graph Representation}
-%\begin{itemize}
-%	\item Define the graph G=(V, E) where V is the set of vertices (nodes) and E is the set of edges.
-%	\item Edge weights represent costs (e.g., travel time, distance, tolls).
-%\end{itemize}
+Traditional shortest path algorithms, such as Dijkstra’s and Bellman-Ford, while effective in small-scale applications, struggle with computational inefficiencies in massive graphs. To overcome this, our approach introduces a preprocessing stage that enhances query response time, making real-time routing feasible even in complex environments. \\ \medskip
 
-%\section{Objectives}
-
-\section{Graph Representation}
-
-\begin{enumerate}
-	\item Road network can be represented as a graph $G(V, E)$, where $V$ is the set of vertices (nodes) and $E$ is the set of edges.
-	\item Each edge is assigned a weight representing cost metrics such as travel time, distance, or implement traditional algorithms such as Dijkstra’s for single-source shortest path calculations and Bellman-Ford for graphs with negative edge weights tolls. 
-	\item Store the graph efficiently using adjacency matrices.
-\end{enumerate}
-
-\section{Data Preprocessing}
-\begin{enumerate}
-	
-	\item Load and clean large-scale datasets from OpenStreetMap.
-	\item  Convert raw data into a structured graph representation, ensuring consistency in node labeling, edge definitions, and weight normalization. 
-	\item Preprocess data using graph simplification techniques such as contraction hierarchies to speed up queries.
-	
-\end{enumerate}
-
-\section{Choosing and Implementing an Algorithm}
-\begin{enumerate}
-	
-	\item Implement Dijkstra’s for single-source shortest paths and Bellman-Ford for graphs with negative weights.
-	\item Enhance performance using \( \mathbf{A^*} \) with heuristics for more efficient search convergence.
-	\item Optimize graph traversal with bidirectional search to reduce search space.
-	
-\end{enumerate}
-
-\section{Visualization and Analysis}
-
-\begin{enumerate}
-	\item Use visualization tools to represent shortest path calculations.
-	\item Create comparative performance graphs showing execution time with different algorithms. 
-\end{enumerate}
+By leveraging preprocessing, the algorithm efficiently indexes the network structure, significantly reducing computation time during query execution.
