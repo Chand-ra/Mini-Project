@@ -133,194 +133,78 @@
 \section{Preprocessing techniques}
 \subsection{Contraction Hierarchies}
 
-
-
-
-
-
-
-
-
-%-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-	\subsection{A* Landmark Technique  Algorithm}
-
+	\subsection{A* Landmark Technique Algorithm}
 		\subsubsection{Introduction}
-		
 			The ALT algorithm is a goal-directed search proposed by Golberg and Harrelson that uses the A* search algorithm and distance estimates to define node potentials that direct the search towards the target.
 			It is a variant of the \textbf{A*} search algorithm where \textbf{L}andmarks and the \textbf{T}riangle inequality are used to compute for a feasible potential function. 
-
-				\subsubsection{Algorithm}
-						
-				The ALT algorithm consists of two main phases:
-				\subsubsection{Preprocessing Phase - Offline Computation}
-				In this phase, ALT selects a set of \textit{landmarks} and precomputes the shortest distances from these landmarks to all nodes in the graph.
-				
-				\subsubsection{Step 1: Landmark Selection}
+		\subsubsection{Algorithm}
+			The ALT algorithm consists of two main phases:
+			\begin{enumerate}
+				\item \textbf{Preprocessing Phase}: In this phase, ALT selects a set of \textit{landmarks} and precomputes the shortest distances from these landmarks to all nodes in the graph.
 				\begin{itemize}
-					\item Choose a set of landmarks $ \textit{L} $ (typically high-degree or far-apart nodes).
-					\item Selection strategies:
+					\item Choose a set of landmarks $ \textit{L} $ (typically high-degree or far-apart nodes).  Selection strategies:
 					\begin{itemize}
 						\item Select landmarks that maximize the shortest path distances between them.
 						\item Choose nodes with high connectivity.
 						\item Select a diverse set of nodes.
-						
 					\end{itemize}
+					\item For each landmark $ L \in \textit{L} $, compute the shortest paths to all other nodes in the graph using Dijkstra’s Algorithm. Store the precomputed distances $d(L, v)$ for every node $v$.
 				\end{itemize}
-				
-				\subsubsection{Step 2: Compute Shortest Path Distances from Landmarks}
-				\begin{itemize}
-					\item For each landmark $ L \in \textit{L} $, compute the shortest paths to \textit{all other nodes} in the graph using Dijkstra’s Algorithm.
-					\item Store the \textit{precomputed distances} $ d(L, v) $ for every node $ v $
-					\item If we have $ k $ landmarks and $ |V| $ nodes, we store $ O(k |V|) $ distances.
-				\end{itemize}
-				
-				\subsubsection{Query Phase - Online Computation}
-				When computing the shortest path from a source $ s $ to a target $ t $, ALT modifies \textit{A* search} by using a heuristic based on \textit{landmark distances}.
-				
-				\subsubsection{Step 1: Compute Heuristic Function}
-				A* search requires a heuristic function $ h(v) $ that estimates the shortest distance from a node $ v $ to the target $ t $. ALT uses the \textit{triangle inequality} to define the heuristic.
-				
-					The heuristic function is defined as:
-					
-					\begin{equation}
-						h(v) = \max_{L \in \textit{L}} \left( \left| d(L, v) - d(L, t) \right| \right)
-					\end{equation}
-					
-					where:
+				\item \textbf{Query Phase}: When computing the shortest path from a source $s$ to a target $t$, ALT modifies A* search by using a heuristic based on \textit{landmark distances}.
 					\begin{itemize}
-						\item \textit{L}  is the set of selected \textit{landmarks}
-						
-						\item $ d(L, v) $ is the precomputed shortest distance from landmark $ L $ to node $ v $
-						
-						\item $ d(L, t) $ is the precomputed shortest distance from landmark $ L $ to the target $ t $.
+						\item A* search requires a heuristic function $ h(v) $ that estimates the shortest distance from a node $ v $ to the target $ t $. ALT uses the \textit{triangle inequality} to define the heuristic as
+						\begin{equation*}
+							h(v) = \max_{L \in \textit{L}} \left( \left| d(L, v) - d(L, t) \right| \right)
+						\end{equation*}
+						where \textit{L}  is the set of selected \textit{landmarks}, $d(L, v)$ is the precomputed shortest distance from landmark $L$ to node $v$ and $d(L, t)$ is the precomputed shortest distance from landmark $L$ to the target $t$.
+						\item Run A* Search with ALT heuristic.
 					\end{itemize}
-				
-				\subsubsection{Step 2: Run A* Search with ALT Heuristic}
-				\begin{itemize}
-					\item Initialize A* search from source $ s $ to target $ t $.
-					\item Instead of using a simple heuristic (e.g., Euclidean distance), use the \textit{ALT heuristic}  $ h(v) $.
-					\item Expand nodes in order of their priority, defined by:
-					
-					\begin{equation}
-					f(v) = g(v) + h(v)
-					\end{equation}
-					
-					where:
-					\begin{itemize}
-						\item $ g(v) $ is the actual distance from $ s $ to $ v $ (computed dynamically).
-						\item $ h(v) $ is the ALT heuristic (precomputed from landmarks).
-					\end{itemize}
-					\item Since $ h(v) $ is \textit{admissible} (never overestimates the true distance), ALT guarantees an \textit{optimal shortest path}.
-				\end{itemize}
-				
-				\subsubsection{Step 3: Termination}
-				\begin{itemize}
-					\item A* terminates when the target $ t $ is dequeued (meaning the shortest path has been found).
-					\item The total cost of the path is stored in $ g(t) $.
-				\end{itemize}
-
-			This algorithm is mathematically predisposed to find the shortest path from a source vertex $s$ to every other vertex in the graph 
-			
-			Refer \textbf{ Appendix \ref{appendix:ALT:correctness}} for the formal proof.
-			
-
+			\end{enumerate}
+			This algorithm is mathematically predisposed to find the shortest path from a source vertex $s$ to every other vertex in the graph.
+			Refer to \textbf{ Appendix \ref{appendix:ALT:correctness}} for a formal proof.
 		\subsubsection{Complexity}
-
 				\begin{itemize}
-					\item \textbf{Preprocessing Time Complexity:} $ O(k \cdot (|V| + |E|) \log |V|) $
-					\item \textbf{Query Time Complexity:} $ O((|V| + |E|) \log |V|) $  (in the worst case)
-					\item \textbf{Space Complexity:} $ O(k \cdot |V|) $
+					\item Preprocessing Time Complexity: $ O(k \cdot (|V| + |E|) \log |V|) $
+					\item Query Time Complexity: $ O((|V| + |E|) \log |V|)$
+					\item Space Complexity: $O(k \cdot |V|)$
 				\end{itemize}
-
-
-				Refer \textbf{Appendix \ref{appendix:ALT:complexity}} for the formal proof. \medskip
+				Please refer to \textbf{Appendix \ref{appendix:ALT:complexity}} for a formal proof of complexity. \medskip
 				
 		\subsubsection{Pros and Cons}
 		\begin{itemize}
 			\item Precomputed landmarks and A* heuristics speed up shortest path searches.
-			\item Significant preprocessing time and memory usage.
+			\item Significant preprocessing time and memory usage, making it inefficient for frequently changing networks.
 			\item Properly chosen landmarks enhance performance, but poor selection can degrade efficiency, affecting search quality.
-			\item Inefficient for frequently changing networks
 		\end{itemize}
-
-
-
-%-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 	\subsection{Hub Labeling}
-
 		\subsubsection{Introduction}
 		Hub Labeling (HL) is a preprocessing-based technique for efficient shortest path queries in graphs. It assigns labels to nodes, storing distances to selected hubs, enabling constant-time distance queries.
 		
 			\subsubsection{Algorithm}
-
-				Let $ G = (V, E) $ be a graph where $ V $ is the set of vertices and $ E $ is the set of edges.
-				
-			\subsubsection{Step 1: Preprocessing Phase}
 				\begin{itemize}
-					\item \textit{Hub Selection:}  
-					Select a subset \( H \subseteq V \) of \( k \) nodes as hubs, based on heuristics such as high-degree nodes or random selection.
-				
-					\item \textit{Compute Shortest Paths:}  
-						\begin{itemize}
-						
-						\item For each $ v \in V $, compute the shortest path distances to each hub $ h \in H $, i.e., $ d(v, h) $, using Dijkstra’s algorithm or another shortest path algorithm.  
-						
-						\item Store the distances in the hub label of node $ v $, denoted as:
-						$
-						L(v) = \{ d(v, h) \mid h \in H \}
-						$
-						
-						\item The preprocessing time complexity is:
-						$
-						O(k \cdot (|V| + |E|) \log |V|)
-						$
-						where $ k $ is the number of hubs.
-						
-						\end{itemize}
-					\end{itemize}
-			\subsubsection{Step 2: Query Phase}
-				
-				Given a query between nodes $ s $ and $ t $, the shortest path $ d(s, t) $ can be computed as:
-				
-						\begin{equation}
-							d(s,t) = \min_{h \in H} \left( d(s,h) + d(h,t) \right)
-						\end{equation}
-
-
-				where:
-				
-				\begin{itemize}
-					\item $ d(s, h) $ is the distance from $ s $ to hub $ h $,
-					\item $ d(h, t) $ is the distance from hub $ h $ to $ t $.
+					\item \textbf{Preprocessing phase}: Select a subset \( H \subseteq V \) of \( k \) nodes as hubs, based on heuristics such as high-degree nodes or random selection. For each $v \in V$, compute the shortest path distances to each hub $h \in H$, i.e., $d(v, h)$, using Dijkstra’s algorithm or another shortest path algorithm and store the distances in the hub label of node $ v $, denoted as:
+					$L(v) = \{ d(v, h) \mid h \in H \}$.
+					\item \textbf{Query phase}: Given a query between nodes $ s $ and $ t $, the shortest path $ d(s, t) $ can be computed as:
+					\begin{equation*}
+						d(s,t) = \min_{h \in H} \left( d(s,h) + d(h,t) \right)
+					\end{equation*}
+					where $d(s, h)$ is the distance from $s$ to hub $h$, and $d(h, t)$ is the distance from hub $h$ to $t$.
 				\end{itemize}
-				
-			
-			
-			Refer \textbf{Appendix \ref{appendix:Hub Labelling:correctness}} for the formal proof.
-			
+			See \textbf{Appendix \ref{appendix:Hub Labelling:correctness}} for a formal proof of correctness of this algorithm.
 				\subsubsection{Complexity}
 					\begin{itemize}
-						\item \textit{Preprocessing Time Complexity:}  $ O(k \cdot (|V| + |E|) \log |V|) $
-						\item \textit{Query Time Complexity:}  $ O(k) $
-						\item \textit{Space Complexity:}  $ O(k \cdot |V|) $
+						\item Preprocessing Time Complexity:  $ O(k \cdot (|V| + |E|) \log |V|) $
+						\item Query Time Complexity:  $ O(k) $
+						\item Space Complexity:  $ O(k \cdot |V|) $
 					\end{itemize} 
-	
-			Refer \textbf{Appendix \ref{appendix:Hub Labelling:Complexity}} for the formal proof. 
+			Please refer to \textbf{Appendix \ref{appendix:Hub Labelling:Complexity}} for a formal proof of complexity. 
 				
 				\subsubsection{Pros and Cons}
 				\begin{itemize}
 					\item Precomputed hub labels enable constant-time shortest path lookups.
-					\item Building hub labels requires extensive computation and storage.
+					\item Building hub labels requires extensive computation and storage, making it unsuitable for graphs with frequent updates.
 					\item Works well for large static graphs but demands significant memory.
-					\item Frequent updates require costly recomputation.
 				\end{itemize}
-										
-				
-
-%-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 % Refer figure \ref{fig:label}.
 
