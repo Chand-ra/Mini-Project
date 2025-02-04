@@ -72,4 +72,244 @@
 			\end{itemize}
 		\item \textit{Conclusion}: If the goal $t$ is reached, $g(t)$ is the true shortest path cost and If $Q$ becomes empty, no path exists.
 	\end{itemize}
+	
+	
+%-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+\section{Proof of correctness for ALT}\label{appendix:ALT:correctness}
+
+
+The ALT algorithm enhances A* search using landmark-based heuristics. The heuristic function is:
+\begin{equation}
+	h(v) = \max_{L \in \textit{L}} \left| d(L, v) - d(L, t) \right|
+\end{equation}
+
+where:
+\begin{itemize}
+	\item $ L $ is a set of landmarks.
+	\item $ d(L, v) $ and $ d(L, t) $ are precomputed distances from $ L $ to nodes $ v $ and  $t $.
+\end{itemize}
+
+\subsubsection{Admissibility of $ h(v) $}
+
+A heuristic is admissible if it never overestimates the true distance:  
+
+\begin{equation} h(v) \leq d(v, t) \end{equation}
+
+By the \textit{triangle inequality}: \begin{equation} d(v, t) \geq |d(L, v) - d(L, t)| \quad \forall L \in L \end{equation}
+
+Taking the maximum over all landmarks:
+\begin{equation}
+	d(v, t) \geq \max_{L \in \textit{L}} \left| d(L, v) - d(L, t) \right| = h(v)
+\end{equation}
+
+Thus, $ h(v) $ is admissible.
+
+\subsubsection{Consistency of $ h(v) $}
+
+A heuristic is consistent if for any edge $ (u, v) $:
+\begin{equation}
+	h(v) \leq d(u, v) + h(u)
+\end{equation}
+
+
+Using the \textit{triangle inequality}:
+\begin{equation} 
+	|d(L, v) - d(L, t)| \leq d(u, v) + |d(L, u) - d(L, t)| 
+\end{equation}
+
+Taking the maximum over all landmarks:
+\begin{equation}
+	h(v) = \max_{L \in \textit{L}} \left| d(L, v) - d(L, t) \right| \leq d(u, v) + h(u)
+\end{equation}
+
+
+Thus, $ h(v) $ is consistent. Since $ h(v) $ is both admissible and consistent, the ALT algorithm guarantees optimal shortest paths.
+
+	
+
+
+%-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+\section{Proof of complexity for ALT}\label{appendix:ALT:complexity}
+
+	In this section, we will perform a step-by-step complexity analysis of the ALT algorithm. We will analyze both the \textit{preprocessing phase} (offline computation) and the \textit{query phase} (online search).
+	
+	\subsubsection{Preprocessing Phase Complexity}
+	
+	The preprocessing phase involves selecting landmarks and computing the shortest path distances from each landmark to all other nodes in the graph.
+	
+	\subsubsection{Step 1: Landmark Selection}
+	
+	The selection of landmarks does not involve heavy computations. It generally involves either:
+	\begin{itemize}
+		\item \textit{Randomly selecting landmarks}: This is a constant-time operation, $ O(1) $.
+		\item \textit{Selecting high-degree or far-apart nodes}: This might involve sorting the nodes based on degree or distance, which would take $ O(|V| \log |V|) $, where $ |V| $ is the number of nodes in the graph.
+	\end{itemize}
+	
+	\textit{Complexity of Landmark Selection}:  
+	This step is usually dominated by $ O(|V| \log |V|) $ in the case of degree-based or far-apart node selection. Otherwise, for random selection, it’s $ O(1) $.
+	
+	\subsubsection{Step 2: Precompute Shortest Path Distances from Landmarks}
+	
+	For each landmark $ L \in \textit{L} $, we compute the shortest paths to all other nodes in the graph using \textit{Dijkstra's algorithm}. The time complexity of Dijkstra’s algorithm using a binary heap is $ O((|V| + |E|) \log |V|) $, where:
+	\begin{itemize}
+		\item $ |V| $ is the number of nodes,
+		\item $ |E| $ is the number of edges.
+	\end{itemize}
+	
+	For $ k $ landmarks, we need to perform Dijkstra’s algorithm $ k $ times, one for each landmark. Therefore, the total preprocessing time complexity is:
+	
+	$
+	O(k \cdot (|V| + |E|) \log |V|)
+	$
+	
+	where:
+	\begin{itemize}
+		\item $ k $ is the number of landmarks, which is typically a small constant.
+		\item $|V| $ is the number of nodes.
+		\item $ |E| $ is the number of edges in the graph.
+	\end{itemize}
+	
+	\textit{Preprocessing Complexity}:  
+	$
+	O(k \cdot (|V| + |E|) \log |V|)
+	$
+	Where $ k $ is typically small (e.g., 10 to 20 landmarks), so it doesn’t significantly affect the overall complexity.
+	
+	\subsubsection{Query Phase Complexity}
+	
+	\subsubsection{A* Search with ALT Heuristic}
+	
+	The A* search algorithm with ALT works similarly to standard A*, but it uses the \textit{ALT heuristic} $ h(v) $ instead of a simple heuristic (like Euclidean distance). The time complexity of the A* search depends on:
+	\begin{itemize}
+		\item The \textit{number of nodes expanded} during the search.
+		\item The \textit{priority queue operations} (insertions and extractions).
+	\end{itemize}
+	
+	In terms of time complexity:
+	\begin{itemize}
+		\item The worst-case time complexity of A* is still $ O((|V| + |E|) \log |V|) $ when using a binary heap to manage the priority queue.
+		\item The \textit{average query time} can be \textit{better} due to the guiding heuristic, but it depends heavily on the graph structure and the quality of the landmarks.
+		\item \textit{Query Complexity}:  In the worst case, the complexity is $ O((|V| + |E|) \log |V|) $. The \textit{average query time} is generally much faster, but it is difficult to bound precisely without empirical data.
+	
+		\end{itemize}
+	\subsubsection{Complexity}
+	\begin{itemize}
+		\item \textbf{Preprocessing Time Complexity:} $ O(k \cdot (|V| + |E|) \log |V|) $
+		\item \textbf{Query Time Complexity:} $ O((|V| + |E|) \log |V|) $ (in the worst case)
+		\item \textbf{Space Complexity:} $ O(k \cdot |V|) $
+	\end{itemize}
+	
+	This analysis shows that while the \textit{preprocessing phase} is $ O(k \cdot (|V| + |E|) \log |V|) $ , the \textit{query phase} is efficient and can significantly outperform traditional algorithms in practice due to the reduced number of expanded nodes.
+	
+	
+
+
+
+
+	
+	
+	
+%-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+\section{Proof of correctness for Hub Labellling}\label{appendix:Hub Labelling:correctness}
+
+	The Hub Labeling algorithm assigns a label $ L(v) $ to each node $ v $, which contains hub-distance pairs $ (h, d(v, h)) $ , where $ h $ is a hub node and $ d(v, h) $ is the distance from node $ v $ to hub $ h $. The shortest path $ d(u, v) $ between nodes $ u $ and $ v $ is computed as:
+
+	\begin{equation}
+		d(u, v) = \min_{h \in \textit{L}(u) \cap \textit{L}(v)} \left( d(u, h) + d(h, v) \right)
+	\end{equation}
+	
+	where $ L(u) $ and $ L(v) $ are the labels for nodes $ u $ and $ v $, respectively and $ h $ is a common hub in both labels $ L(u) $ and $ L(v) $.
+	
+	\subsubsection{Label Cover Property}
+	
+	During the preprocessing phase of the Hub Labeling algorithm, we ensure that for any pair of nodes $ u $ and $ v $, their labels $ L(u) $ and $ L(v) $ share at least one common hub $ h $ that lies on the shortest path between $ u $ and $ v $. This property is critical because it guarantees that the shortest path can always be reconstructed using the shared hub. \medskip
+	
+	Formally, for any two nodes $ u, v \in V $, there exists a hub $ h \in L(u) \cap L(v) $ such that $ h $ lies on the shortest path between $ u $ and $ v $, i.e., the path $ u \to h \to v $ is a valid shortest path. \medskip
+	
+	Thus, this \textit{Label Cover Property} ensures that the correct hubs are selected in the query phase and the algorithm can always compute the shortest path.
+	
+	\subsubsection{Correctness of the Query}
+	
+	For any two nodes $ u $ and $ v $, during the query phase, the algorithm scans their labels $ L(u) $ and  $ L(v) $ to find the hub $ h $ that minimizes the expression $ d(u, h) + d(h, v) $. This is equivalent to finding the shortest path between $ u $  and $ v $ by traversing through a common hub $ h $. \medskip
+	
+	Since $ h $ lies on the shortest path between $ u $ and $ v $ (by the Label Cover Property), the value $ d(u, h) + d(h, v) $ is guaranteed to be the shortest path distance between $ u $ and $ v $. \medskip
+	
+	Therefore, the Hub Labeling algorithm correctly computes the shortest path for any query $ (u, v) $, as it always finds the optimal hub $ h $ and ensures that the sum of distances $ d(u, h) + d(h, v) $ corresponds to the actual shortest path distance.
+	
+	Thus, the \textit{Hub Labeling Algorithm} is correct.
+	
+
+%-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+\section{Proof of complexity for Hub Labelling}\label{appendix:Hub Labelling:Complexity}
+
+	\subsubsection{Preprocessing Complexity}
+	
+	The preprocessing phase involves computing the labels for all nodes. This is often done using \textit{hierarchical decomposition} or \textit{Contraction Hierarchies (CH)}, which are techniques used to optimize the process by simplifying the graph and reducing the number of nodes that need to be considered.
+	
+	
+	Let $ |V| $ be the number of vertices in the graph, and let $|E| $ be the number of edges.
+	
+	\begin{itemize}
+
+	\item \textit{Worst-case Complexity}: 
+	The worst-case complexity for preprocessing depends on the structure of the graph. For general graphs, it can be $ O(|V|^2) $, where every node needs to be processed with respect to all other nodes. 
+	
+	\item \textit{Road Networks}, which typically have hierarchical properties, the preprocessing complexity is often \textit{subquadratic}. This means that in practice, the preprocessing time may be significantly lower than $ O(|V|^2) $.
+	
+	\item \textit{Preprocessing complexity} : $ O(|V|^2) $ worst case and \textit{Subquadratic} for Road Networks.
+	
+		\end{itemize}
+	\subsubsection{Query Complexity}
+	
+	The query time depends on the size of the labels $ |L(u)| $ and $|L(v)| $ for the nodes $ u $ and $ v $ being queried. Specifically, the query involves finding a common hub $ h \in L(u) \cap L(v) $, and the query time is proportional to the size of the intersection of the labels. 
+	
+	\begin{itemize}
+	
+	\item \textit{Worst-case Complexity}: The worst-case query time is determined by the minimum size of the two labels $ L(u) $ and $ L(v) $, so the complexity is:
+	$
+	O(\min(|L(u)|, |L(v)|))
+	$
+	
+	\item\textit{Practical Consideration}: In practice, the size of the labels is often small because they grow logarithmically in the size of the graph. As a result, queries tend to be near constant time, i.e., $ O(1) $ for typical use cases.
+	
+	\item Thus, the \textit{query complexity} is:
+	$
+	O(\min(|L(u)|, |L(v)|)) \quad \textit{in the worst case, and typically near constant time in practice.}
+	$
+	
+	\end{itemize}
+	
+	\subsubsection{Space Complexity}
+	
+	The space complexity is determined by the storage required for all the labels of the nodes in the graph. Each label consists of a set of hub-distance pairs $ (h, d(v, h)) $, and the size of each label is typically denoted by $|L| $.
+	
+	\begin{itemize}
+	\item	\textit{Space Complexity}: The total space required to store labels for all nodes is proportional to the number of nodes $|V|$ and the average label size $ |L| $. Thus, the space complexity is:	$ O(|V| \cdot |L|) $ 
+	
+	where:
+	
+	 $|L| $ is the average label size.
+	
+	\end{itemize}
+	
+	
+
+	
+	
+	
+	
+%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	
 \end{appendices}
