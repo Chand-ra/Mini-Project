@@ -22,7 +22,8 @@
 			This algorithm is mathematically predisposed to find the shortest path from a source vertex $s$ to every other vertex in the graph (see\textbf{ Appendix \ref{appendix:bfs:correctness}} for a formal proof).
 		
 		\subsubsection{Complexity}
-			When finding the shortest path between a pair of vertices in a graph, the worst-case time complexity for the BFS algorithm is $O(V)$ for queue operations + $O(E)$ for edge processing, netting a worst-case time complexity of $O(V + E)$ (see \textbf{Appendix \ref{appendix:bfs:complexity}} for a formal proof). \\ \\
+			When finding the shortest path between a pair of vertices in a graph, the worst-case time complexity for the BFS algorithm is $O(V)$ for queue operations + $O(E)$ for edge processing, netting a worst-case time complexity of $O(V + E)$ (see \textbf{Appendix \ref{appendix:bfs:complexity}} for a formal proof). \medskip
+			
 			The space complexity for BFS is $O(V)$ since we use a queue to store the vertices yet to be explored.
 		
 		\subsubsection{Pros and Cons}
@@ -47,7 +48,8 @@
 			\end{enumerate}
 			Refer to \textbf{Appendix \ref{appendix:bellford:correctness}} for a formal proof of correctness of this algorithm.
 		\subsubsection{Complexity}
-			When finding the shortest path from a source vertex to every other vertex in a graph, the worst-case time complexity for the Bellman-Ford algorithm is $O(V \cdot E)$ (see \textbf{Appendix \ref{appendix:bellford:complexity}} for a formal proof). \\ \\
+			When finding the shortest path from a source vertex to every other vertex in a graph, the worst-case time complexity for the Bellman-Ford algorithm is $O(V \cdot E)$ (see \textbf{Appendix \ref{appendix:bellford:complexity}} for a formal proof). \medskip
+			
 			The space complexity for Bellman-Ford is $O(V)$ since we use an array of size $V$ to store all the shortest-path distances.
 		\subsubsection{Pros and Cons}
 			\begin{itemize}
@@ -71,7 +73,8 @@
 		\end{enumerate}
 			Refer to \textbf{Appendix \ref{appendix:dijkstra:correctness}} for a formal proof of correctness of this algorithm.
 		\subsubsection{Complexity}
-			When finding the shortest path from a source vertex to every other vertex in a graph, the worst-case time complexity for the Dijkstra's algorithm is $O((V+E)\log{V})$ using a binary heap or $O(V\log{V}+E)$ using a Fibonacci heap. (see \textbf{Appendix \ref{appendix:dijkstra:complexity}} for a formal proof). \\ \\
+			When finding the shortest path from a source vertex to every other vertex in a graph, the worst-case time complexity for the Dijkstra's algorithm is $O((V+E)\log{V})$ using a binary heap or $O(V\log{V}+E)$ using a Fibonacci heap. (see \textbf{Appendix \ref{appendix:dijkstra:complexity}} for a formal proof). \medskip
+			
 			The space complexity for Dijkstra's is $O(V)$ since we use an array of size $V$ to store all the shortest-path distances.
 		\subsubsection{Pros and Cons}
 		\begin{itemize}
@@ -129,10 +132,81 @@
 		\subsubsection{Pros and Cons}
 \section{Preprocessing techniques}
 \subsection{Contraction Hierarchies}
-\subsection{ALT Algorithm}
-\subsection{Hub Labeling}
 
-Refer figure \ref{fig:label}.
+	\subsection{A* Landmark Technique Algorithm}
+		\subsubsection{Introduction}
+			The ALT algorithm is a goal-directed search proposed by Golberg and Harrelson that uses the A* search algorithm and distance estimates to define node potentials that direct the search towards the target.
+			It is a variant of the \textbf{A*} search algorithm where \textbf{L}andmarks and the \textbf{T}riangle inequality are used to compute for a feasible potential function. 
+		\subsubsection{Algorithm}
+			The ALT algorithm consists of two main phases:
+			\begin{enumerate}
+				\item \textbf{Preprocessing Phase}: In this phase, ALT selects a set of \textit{landmarks} and precomputes the shortest distances from these landmarks to all nodes in the graph.
+				\begin{itemize}
+					\item Choose a set of landmarks $ \textit{L} $ (typically high-degree or far-apart nodes).  Selection strategies:
+					\begin{itemize}
+						\item Select landmarks that maximize the shortest path distances between them.
+						\item Choose nodes with high connectivity.
+						\item Select a diverse set of nodes.
+					\end{itemize}
+					\item For each landmark $ L \in \textit{L} $, compute the shortest paths to all other nodes in the graph using Dijkstra’s Algorithm. Store the precomputed distances $d(L, v)$ for every node $v$.
+				\end{itemize}
+				\item \textbf{Query Phase}: When computing the shortest path from a source $s$ to a target $t$, ALT modifies A* search by using a heuristic based on \textit{landmark distances}.
+					\begin{itemize}
+						\item A* search requires a heuristic function $ h(v) $ that estimates the shortest distance from a node $ v $ to the target $ t $. ALT uses the \textit{triangle inequality} to define the heuristic as
+						\begin{equation*}
+							h(v) = \max_{L \in \textit{L}} \left( \left| d(L, v) - d(L, t) \right| \right)
+						\end{equation*}
+						where \textit{L}  is the set of selected \textit{landmarks}, $d(L, v)$ is the precomputed shortest distance from landmark $L$ to node $v$ and $d(L, t)$ is the precomputed shortest distance from landmark $L$ to the target $t$.
+						\item Run A* Search with ALT heuristic.
+					\end{itemize}
+			\end{enumerate}
+			This algorithm is mathematically predisposed to find the shortest path from a source vertex $s$ to every other vertex in the graph.
+			Refer to \textbf{ Appendix \ref{appendix:ALT:correctness}} for a formal proof.
+		\subsubsection{Complexity}
+				\begin{itemize}
+					\item Preprocessing Time Complexity: $ O(k \cdot (|V| + |E|) \log |V|) $
+					\item Query Time Complexity: $ O((|V| + |E|) \log |V|)$
+					\item Space Complexity: $O(k \cdot |V|)$
+				\end{itemize}
+				Please refer to \textbf{Appendix \ref{appendix:ALT:complexity}} for a formal proof of complexity. \medskip
+				
+		\subsubsection{Pros and Cons}
+		\begin{itemize}
+			\item Precomputed landmarks and A* heuristics speed up shortest path searches.
+			\item Significant preprocessing time and memory usage, making it inefficient for frequently changing networks.
+			\item Properly chosen landmarks enhance performance, but poor selection can degrade efficiency, affecting search quality.
+		\end{itemize}
+	\subsection{Hub Labeling}
+		\subsubsection{Introduction}
+		Hub Labeling (HL) is a preprocessing-based technique for efficient shortest path queries in graphs. It assigns labels to nodes, storing distances to selected hubs, enabling constant-time distance queries.
+		
+			\subsubsection{Algorithm}
+				\begin{itemize}
+					\item \textbf{Preprocessing phase}: Select a subset \( H \subseteq V \) of \( k \) nodes as hubs, based on heuristics such as high-degree nodes or random selection. For each $v \in V$, compute the shortest path distances to each hub $h \in H$, i.e., $d(v, h)$, using Dijkstra’s algorithm or another shortest path algorithm and store the distances in the hub label of node $ v $, denoted as:
+					$L(v) = \{ d(v, h) \mid h \in H \}$.
+					\item \textbf{Query phase}: Given a query between nodes $ s $ and $ t $, the shortest path $ d(s, t) $ can be computed as:
+					\begin{equation*}
+						d(s,t) = \min_{h \in H} \left( d(s,h) + d(h,t) \right)
+					\end{equation*}
+					where $d(s, h)$ is the distance from $s$ to hub $h$, and $d(h, t)$ is the distance from hub $h$ to $t$.
+				\end{itemize}
+			See \textbf{Appendix \ref{appendix:Hub Labelling:correctness}} for a formal proof of correctness of this algorithm.
+				\subsubsection{Complexity}
+					\begin{itemize}
+						\item Preprocessing Time Complexity:  $ O(k \cdot (|V| + |E|) \log |V|) $
+						\item Query Time Complexity:  $ O(k) $
+						\item Space Complexity:  $ O(k \cdot |V|) $
+					\end{itemize} 
+			Please refer to \textbf{Appendix \ref{appendix:Hub Labelling:Complexity}} for a formal proof of complexity. 
+				
+				\subsubsection{Pros and Cons}
+				\begin{itemize}
+					\item Precomputed hub labels enable constant-time shortest path lookups.
+					\item Building hub labels requires extensive computation and storage, making it unsuitable for graphs with frequent updates.
+					\item Works well for large static graphs but demands significant memory.
+				\end{itemize}
+
+% Refer figure \ref{fig:label}.
 
 \section{Summary of Findings}
 %\begin{figure}[htb]
@@ -141,11 +215,4 @@ Refer figure \ref{fig:label}.
 %\caption{Caption here}
 %\label{fig:label} % insert suitable label, this is used to refer to a fig from within the text as shown above
 %\end{figure}
-
-\section{Gaps in current approaches}
-	\begin{itemize}
-		\item Limited scalability in dynamic graphs.
-		\item Lack of flexibility for user preferences.
-		\item High preprocessing overhead in large graphs.
-	\end{itemize}
 

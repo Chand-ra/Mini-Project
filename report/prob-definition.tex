@@ -1,13 +1,7 @@
 \chapter{Problem Definition}
 
-\section{Graph Representation}
-	\begin{itemize}
-		\item Define the graph G=(V, E) where V is the set of vertices (nodes) and E is the set of edges.
-		\item Edge weights represent costs (e.g., travel time, distance, tolls).
-	\end{itemize}
-\section{Objectives}
-	\begin{itemize}
-		\item Minimize computation time for shortest path queries.
-		\item Incorporate real-time edge weight updates.
-		\item Allow customizable routing based on user-defined cost functions.
-	\end{itemize}
+The primary objective of this project is to develop and analyze a \textbf{hybrid shortest path algorithm} that integrates \textbf{preprocessing and efficient querying} to optimize route computation in large-scale networks. \\ \medskip
+
+Traditional shortest path algorithms, such as Dijkstra’s and Bellman-Ford, while effective in small-scale applications, struggle with computational inefficiencies in massive graphs. To overcome this, our approach introduces a preprocessing stage that enhances query response time, making real-time routing feasible even in complex environments. \\ \medskip
+
+By leveraging preprocessing, the algorithm efficiently indexes the network structure, significantly reducing computation time during query execution.
