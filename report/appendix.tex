@@ -72,6 +72,91 @@
 			\end{itemize}
 		\item \textit{Conclusion}: If the goal $t$ is reached, $g(t)$ is the true shortest path cost and If $Q$ becomes empty, no path exists.
 	\end{itemize}
+\section{Proof of correctness for Bidirectional Search}\label{appendix:bidirectional:correctness}
+\section*{Statement}
+If a path exists from the start node $s$ to the goal node $t$, bidirectional search will correctly find the shortest such path.
+
+\section*{Assumptions}
+\begin{itemize}
+	\item The graph is undirected (or directed with properly reversed edges for the backward search).
+	\item The graph is unweighted or uniformly weighted, ensuring BFS finds shortest paths.
+	\item The searches are synchronized (e.g., alternate expansions between directions).
+\end{itemize}
+
+\section*{Proof}
+
+\subsection*{Existence of a Meeting Node}
+Let the shortest path length from $s$ to $t$ be $L$. A midpoint node $m$ exists on this path such that:
+\begin{itemize}
+	\item If $L$ is even, $m$ is at distance $L/2$ from both $s$ and $t$.
+	\item If $L$ is odd, $m$ is at distance $\lfloor L/2 \rfloor$ from $s$ and $\lceil L/2 \rceil$ from $t$ (or vice versa).
+\end{itemize}
+
+In both cases, the forward search (from $s$) and backward search (from $t$) will reach $m$ after $d$ and $e$ steps, respectively, where $d + e = L$. Thus, $m$ will eventually be included in both frontiers.
+
+\subsection*{Termination}
+Since the graph is finite and BFS explores nodes level-by-level, both searches will expand their frontiers incrementally. The algorithm terminates when a common node is found in both frontiers, which is guaranteed due to the existence of $m$.
+
+\subsection*{Optimality of the Path Found}
+Suppose the algorithm terminates with a path of length $L' > L$. Let $v$ be the meeting node, so $d_f(v) + d_b(v) = L'$. However, the shortest path implies the existence of a node $u$ where $d_f(u) + d_b(u) = L < L'$. Since BFS explores nodes in order of increasing distance, $u$ would have been encountered in both frontiers when the forward and backward searches reached depths $d_f(u)$ and $d_b(u)$, respectively. This contradicts the assumption that $L' > L$, proving the first meeting node corresponds to the shortest path.
+
+\subsection*{Completeness}
+If a path exists, both BFS processes will explore all nodes up to depth $\lceil L/2 \rceil$ (forward) and $\lfloor L/2 \rfloor$ (backward), ensuring the meeting node $m$ is found.
+
+\section{Proof of complexity for Bidirectional Search}\label{appendix:bidirectional:complexity}
+\section*{1. Time Complexity}
+\subsection*{Standard BFS}
+Explores $O(b^d)$ nodes, as it traverses all nodes up to depth $d$.
+
+\subsection*{Bidirectional Search}
+\begin{itemize}
+	\item Each search (forward and backward) explores up to depth $\frac{d}{2}$.
+	\item Nodes explored by each search: $O(b^{d/2})$.
+	\item Total nodes explored: $O(b^{d/2} + b^{d/2}) = O(b^{d/2})$.
+\end{itemize}
+\textbf{Result:} Time complexity is $O(b^{d/2})$, exponentially better than BFS.
+
+\section*{2. Space Complexity}
+\subsection*{Standard BFS}
+Stores all nodes at the deepest level, requiring $O(b^d)$ space.
+
+\subsection*{Bidirectional Search}
+\begin{itemize}
+	\item Each search stores nodes up to depth $\frac{d}{2}$.
+	\item Space for each search: $O(b^{d/2})$.
+	\item Total space: $O(b^{d/2} + b^{d/2}) = O(b^{d/2})$.
+\end{itemize}
+\textbf{Result:} Space complexity is $O(b^{d/2})$, matching the time complexity.
+
+\section*{Proof Intuition}
+\subsection*{Meeting in the Middle}
+The shortest path of length $d$ implies the forward and backward searches meet at depth $\frac{d}{2}$.  
+Even if the path length is odd ($d = 2k + 1$), one search reaches depth $k + 1$, but asymptotically, $O(b^{d/2})$ dominates.
+
+\subsection*{Geometric Series Reduction}
+\begin{itemize}
+	\item Nodes at depth $k$: $b^k$.
+	\item Total nodes explored by one direction: $\sum_{k=1}^{d/2} b^k = O(b^{d/2})$.
+\end{itemize}
+
+\subsection*{Intersection Check}
+Efficiently checking for intersection (e.g., hash tables) ensures the $O(b^{d/2})$ bound holds.
+
+\subsection{Caveats}
+\begin{itemize}
+	\item Graph Structure: The analysis assumes a tree with uniform branching Cycles or irregular branching may affect practical performance but not the asymptotic bound.
+	\item Optimality: Bidirectional BFS guarantees the shortest path only if both searches use BFS.
+\end{itemize}
+
+\subsection*{Conclusion}
+Bidirectional search reduces the exponent in the complexity by half compared to standard BFS:
+\begin{itemize}
+	\item \textbf{Time:} $O(b^{d/2})$ vs. $O(b^d)$.
+	\item \textbf{Space:} $O(b^{d/2})$ vs. $O(b^d)$.
+\end{itemize}
+\section{Proof of correctness for Contraction Hierarchies}\label{appendix:contraction:correctness}
+
+\section{Proof of complexity for Contraction Hierarchies}\label{appendix:contraction:complexity}
 
 \section{Proof of correctness for ALT}\label{appendix:ALT:correctness}
 
