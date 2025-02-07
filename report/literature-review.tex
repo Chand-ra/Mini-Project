@@ -127,12 +127,113 @@
 			\end{itemize}
 	\subsection{Bidirectional Search}
 		\subsubsection{Introduction}
+			Bidirectional Search is a graph traversal algorithm that explores a graph by simultaneously conducting two searches: one starting from the initial (source) node and moving forward, and another starting from the goal (target) node and moving backward. The two searches "meet" when a common node is detected in their exploration paths. This approach significantly reduces the search space compared to traditional unidirectional algorithms like Breadth-First Search (BFS) or Depth-First Search (DFS), making it particularly efficient for problems with well-defined start and goal states. Bidirectional Search is widely used in pathfinding applications, network routing, and puzzle-solving algorithms (e.g., 15-puzzle, Rubik’s Cube).
 		\subsubsection{Algorithm}
+		
+		\subsection*{Initialization}
+		\begin{itemize}
+			\item Create two queues: \texttt{forward\_queue} (for the forward search from the start node) and \texttt{backward\_queue} (for the backward search from the goal node).
+			\item Maintain two visited sets: \texttt{forward\_visited} and \texttt{backward\_visited}, to track explored nodes in each direction.
+		\end{itemize}
+		
+		\subsection*{Search Execution}
+		Expand nodes level-by-level from both directions, typically using BFS for optimal shortest-path guarantees.
+		
+		For each iteration:
+		\begin{itemize}
+			\item \textbf{Forward Search:} Dequeue a node from \texttt{forward\_queue}, mark it as visited in \texttt{forward\_visited}, and enqueue its unvisited neighbors.
+			\item \textbf{Backward Search:} Dequeue a node from \texttt{backward\_queue}, mark it as visited in \texttt{backward\_visited}, and enqueue its unvisited predecessors (reverse neighbors).
+		\end{itemize}
+		
+		\subsection*{Intersection Check}
+		\begin{itemize}
+			\item After each step, check if the current node in either direction exists in the opposite visited set.
+			\item If an intersection node is found, terminate the search.
+		\end{itemize}
+		
+		\subsection*{Path Reconstruction}
+		Combine the path from the start node to the intersection node (forward path) and the path from the intersection node to the goal node to form the complete solution.
+		
 		\subsubsection{Complexity}
+		
+		\subsection*{Time Complexity}
+		\begin{itemize}
+			\item \textbf{Traditional BFS:} $O(b^d)$, where $b$ = branching factor, $d$ = depth of the goal.
+			\item \textbf{Bidirectional Search:} $O(b^{d/2} + b^{d/2}) = O(b^{d/2})$.
+			
+			The reduction arises because both searches explore only half the depth.
+		\end{itemize}
+		
+		\subsection*{Space Complexity}
+		\begin{itemize}
+			\item $O(b^{d/2})$ for each direction, totaling $O(b^{d/2})$. 
+			\item More memory-efficient than unidirectional BFS ($O(b^d)$).
+		\end{itemize}
+	
 		\subsubsection{Pros and Cons}
+		\begin{enumerate}
+			\item Bidirectional search is more efficient compared to traditional BFS and DFS because it reduces both time and space complexity exponentially.
+			\item Guarantees the shortest path when using BFS.
+			\item This algorithm works well for symmetric state spaces, providing a balanced search.
+			\item It is scalable and suitable for large graphs with high branching factors.\\
+			
+			
+			\item Bidirectional search requires explicit knowledge of the goal state, which may not always be possible.
+			\item Managing two simultaneous searches increases implementation complexity.
+			\item Handling predecessor tracking in directed graphs can be challenging.
+			\item Frequent intersection checks introduce synchronization overhead during execution.
+		\end{enumerate}
 \section{Preprocessing techniques}
 \subsection{Contraction Hierarchies}
-
+	\subsubsection{Introduction}
+	Contraction Hierarchies (CH) is a speed-up technique for shortest-path computations in large-scale graphs, particularly road networks. It preprocesses the graph to create a hierarchy of nodes, allowing queries to be answered significantly faster than traditional algorithms like Dijkstra's. The key idea is to iteratively ``contract'' less important nodes, adding shortcut edges to preserve shortest paths. During query processing, a bidirectional search is performed on the hierarchy, which drastically reduces the search space. CH is widely used in navigation systems, logistics, and route planning due to its efficiency and scalability.
+	\subsubsection{Algorithm}
+	\subsubsection*{Preprocessing Phase:}
+	\begin{enumerate}
+		\item \textbf{Node Ordering:} Assign a priority (importance) to each node based on a heuristic (e.g., edge difference, number of shortcuts added).
+		\item \textbf{Node Contraction:} Iteratively contract nodes in increasing order of importance:
+		\begin{itemize}
+			\item Remove the node and add shortcuts between its neighbors to preserve shortest paths.
+			\item Store the shortcuts and contracted nodes in the hierarchy.
+		\end{itemize}
+	\end{enumerate}
+	
+	\subsubsection*{Query Phase:}
+	\begin{enumerate}
+		\item \textbf{Bidirectional Search:} Perform a bidirectional Dijkstra search on the preprocessed graph:
+		\begin{itemize}
+			\item \textbf{Forward Search:} From the source node, explore only edges leading to higher-ranked nodes.
+			\item \textbf{Backward Search:} From the target node, explore only edges leading to higher-ranked nodes.
+			\item \textbf{Intersection Check:} Terminate when the forward and backward searches meet at a common node.
+			\item \textbf{Path Reconstruction:} Combine the paths from both searches and resolve shortcuts to retrieve the actual shortest path.
+		\end{itemize}
+	\end{enumerate}
+	\subsubsection{Complexity}
+	\subsubsection*{Preprocessing Complexity:}
+	\begin{itemize}
+		\item \textbf{Time:} \(O(n \log n + m)\), where \(n\) = number of nodes and \(m\) = number of edges.
+		\item \textbf{Space:} \(O(m+s)\), where \(s\) = number of shortcuts added during preprocessing.
+	\end{itemize}
+	
+	\subsubsection*{Query Complexity:}
+	\begin{itemize}
+		\item \textbf{Time:} \(O(k \log k)\), where \(k\) = number of nodes explored during the bidirectional search (typically much smaller than \(n\)).
+		\item \textbf{Space:} \(O(k)\) for storing the search frontiers.
+	\end{itemize}
+	
+	\subsubsection{Pros and Cons}
+	\begin{enumerate}
+		\item Fast Queries: Enables sub-second shortest-path computations in large graphs.  
+		\item Scalability: Handles large-scale graphs (e.g., road networks with millions of nodes).
+		\item  Optimality: Guarantees exact shortest paths.
+		\item Efficient Storage: Shortcuts are compactly stored, minimizing memory usage.\\
+		
+		\item Preprocessing Overhead: Requires significant time and space for preprocessing. 
+		\item Static Graphs: Not well-suited for dynamic graphs with frequent updates. 
+		\item Complex Implementation: Requires careful node ordering and shortcut management. 
+		\item Dependency on Hierarchy Quality: Performance depends on the node ordering heuristic.
+		
+	\end{enumerate}
 	\subsection{A* Landmark Technique Algorithm}
 		\subsubsection{Introduction}
 			The ALT algorithm is a goal-directed search proposed by Golberg and Harrelson that uses the A* search algorithm and distance estimates to define node potentials that direct the search towards the target.
