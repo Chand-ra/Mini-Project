@@ -154,6 +154,8 @@
 		\subsection*{Path Reconstruction}
 		Combine the path from the start node to the intersection node (forward path) and the path from the intersection node to the goal node to form the complete solution.
 		
+		Please refer to \textbf{ Appendix \ref{appendix:Bidirectional:correctness}} for a formal proof of correctness.
+		
 		\subsubsection{Complexity}
 		
 		\subsection*{Time Complexity}
@@ -168,7 +170,10 @@
 		\begin{itemize}
 			\item $O(b^{d/2})$ for each direction, totaling $O(b^{d/2})$. 
 			\item More memory-efficient than unidirectional BFS ($O(b^d)$).
+			
 		\end{itemize}
+	    Please refer to \textbf{ Appendix \ref{appendix:Bidirectional:complexity}} for a formal proof of complexity.
+	    
 	
 		\subsubsection{Pros and Cons}
 		\begin{enumerate}
@@ -207,6 +212,7 @@
 			\item \textbf{Intersection Check:} Terminate when the forward and backward searches meet at a common node.
 			\item \textbf{Path Reconstruction:} Combine the paths from both searches and resolve shortcuts to retrieve the actual shortest path.
 		\end{itemize}
+	Please refer to \textbf{Appendix \ref{appendix:contraction:correctness}} for formal Proof of correctness
 	\end{enumerate}
 	\subsubsection{Complexity}
 	\subsubsection*{Preprocessing Complexity:}
@@ -220,7 +226,7 @@
 		\item \textbf{Time:} \(O(k \log k)\), where \(k\) = number of nodes explored during the bidirectional search (typically much smaller than \(n\)).
 		\item \textbf{Space:} \(O(k)\) for storing the search frontiers.
 	\end{itemize}
-	
+	Please refer to \textbf{Appendix \ref{appendix:constraction:complexity}} for formal proof of Complexity.
 	\subsubsection{Pros and Cons}
 	\begin{enumerate}
 		\item Fast Queries: Enables sub-second shortest-path computations in large graphs.  

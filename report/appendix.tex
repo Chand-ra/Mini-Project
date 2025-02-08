@@ -56,7 +56,7 @@
 		\item For a binary heap, $V \times \mbox{Extract-Min}$ takes $O(V\log{V})$ time and $E \times \mbox{Decrease-Key}$ takes $O(E\log{V})$ time $\to$ a total complexity of $O((V + E)\log{V})$
 		\item For a fibonacci heap, $V \times \mbox{Extract-Min}$ takes $O(V\log{V})$ time and $E \times \mbox{Decrease-Key}$ takes $O(E)$ time $\to$ a total complexity of $O(V\log{V} + E)$.
 	\end{itemize}
-	\section{Proof of correctness for A* search}\label{appendix:astar:correctness}
+\section{Proof of correctness for A* search}\label{appendix:astar:correctness}
 	We'll prove the correctness of A* search algorithm using mathematical induction. Let us define the following: \\
 	$f(s)$: Estimated total cost of the path from the start node to the goal node, passing through the current node. \\
 	$g(s)$: Cost of the shortest path from the start node to the current node. \\
@@ -72,7 +72,7 @@
 			\end{itemize}
 		\item \textit{Conclusion}: If the goal $t$ is reached, $g(t)$ is the true shortest path cost and If $Q$ becomes empty, no path exists.
 	\end{itemize}
-\section{Proof of correctness for Bidirectional Search}\label{appendix:bidirectional:correctness}
+\section{Proof of correctness for Bidirectional Search}\label{appendix:Bidirectional:correctness}
 \section*{Statement}
 If a path exists from the start node $s$ to the goal node $t$, bidirectional search will correctly find the shortest such path.
 
@@ -103,7 +103,7 @@ Suppose the algorithm terminates with a path of length $L' > L$. Let $v$ be the 
 \subsection*{Completeness}
 If a path exists, both BFS processes will explore all nodes up to depth $\lceil L/2 \rceil$ (forward) and $\lfloor L/2 \rfloor$ (backward), ensuring the meeting node $m$ is found.
 
-\section{Proof of complexity for Bidirectional Search}\label{appendix:bidirectional:complexity}
+\section{Proof of complexity for Bidirectional Search}\label{appendix:Bidirectional:complexity}
 \section*{1. Time Complexity}
 \subsection*{Standard BFS}
 Explores $O(b^d)$ nodes, as it traverses all nodes up to depth $d$.
@@ -155,8 +155,118 @@ Bidirectional search reduces the exponent in the complexity by half compared to 
 	\item \textbf{Space:} $O(b^{d/2})$ vs. $O(b^d)$.
 \end{itemize}
 \section{Proof of correctness for Contraction Hierarchies}\label{appendix:contraction:correctness}
+	\section*{1. Preprocessing Correctness}
+	\textbf{Claim:} The contraction process preserves all shortest paths in the original graph \(G\).
+	
+	\subsection*{Proof by Induction}
+	\textbf{Base Case:}  
+	The original graph \(G\) trivially preserves all shortest paths because no nodes have been contracted.
+	
+	\textbf{Inductive Hypothesis:}  
+	Assume that after contracting the first \(k\) nodes, the remaining graph still preserves all shortest paths.
+	
+	\textbf{Inductive Step:}  
+	When contracting the \((k+1)\)-th node \(v\), we check each pair of neighbors \((u, w)\):
+	
+	\begin{itemize}
+		\item \textbf{Case 1:} If the shortest path between \(u\) and \(w\) goes through \(v\), add a shortcut from \(u\) to \(w\) with weight  
+		\[
+		w(u, w) = w(u, v) + w(v, w).
+		\]
+		This ensures that paths going through \(v\) are preserved.
+		\item \textbf{Case 2:} If there already exists a direct or alternative path between \(u\) and \(w\) not involving \(v\), then the shortcut is redundant but does no harm.
+	\end{itemize}
+	
+	\textbf{Conclusion:} By the inductive hypothesis, after each contraction, the graph still preserves all shortest paths. Therefore, preprocessing maintains correctness.
+	
+	\section*{2. Query Correctness}
+	\textbf{Claim:} The bidirectional Dijkstra search restricted to upward edges computes the shortest path.
+	
+	\subsection*{Definitions}
+	\begin{itemize}
+		\item \textbf{Node Ranking:} Each node is assigned a unique rank based on the order of contractions. Let \(\mathrm{rank}(v)\) denote the importance of node \(v\).
+		\item \textbf{Upward Edges:} An edge \((u, v)\) is upward if \(\mathrm{rank}(v) > \mathrm{rank}(u)\).
+	\end{itemize}
+	
+	\subsection*{Proof}
+	Let \(P = s \to \cdots \to t\) be a shortest path in the original graph, where \(v\) is the highest-ranked node on this path.
+	
+	\textbf{Forward Search:}  
+	Starting from \(s\), the forward search uses only upward edges, ensuring that it will reach the highest-ranked node \(v\).
+	
+	\textbf{Reverse Search:}  
+	Starting from \(t\), the reverse search (using upward edges in the reversed graph) will also reach \(v\) when viewed in reverse.
+	
+	\textbf{Meeting Point at \(v\):}  
+	Both searches meet at \(v\), combining the shortest path from \(s\) to \(v\) and from \(t\) to \(v\). The minimum distance over all meeting points is the shortest path between \(s\) and \(t\).
+	
+	\subsection*{Formalization}
+	\begin{itemize}
+		\item Any shortest path can be partitioned at the highest-ranked node \(v\) into two upward subpaths.
+		\item The bidirectional search explores all candidates for the highest-ranked node \(v\), ensuring that the shortest path is found.
+	\end{itemize}
+	
+	\section*{Conclusion}
+	The correctness of the CH algorithm follows from:
+	\begin{itemize}
+		\item \textbf{Preprocessing Correctness:} Shortcutting preserves all shortest paths during contractions.
+		\item \textbf{Query Correctness:} Bidirectional search efficiently finds the shortest path using the hierarchy structure.
+	\end{itemize}
+	
+	This proof demonstrates that the CH algorithm guarantees correct results while reducing the search space through node contractions and hierarchical search.
 
-\section{Proof of complexity for Contraction Hierarchies}\label{appendix:contraction:complexity}
+
+\section{Proof of complexity for Contraction Hierarchies}\label{appendix:constraction:complexity}
+	\section*{1. Preprocessing Complexity}
+	The preprocessing step involves contracting nodes and adding shortcuts. Let's break down the steps:
+	
+	\subsection*{Step 1: Ranking the Nodes}
+	\begin{itemize}
+		\item Each node in the graph is assigned a rank based on its importance.
+		\item Ranking is done by contracting nodes one by one and observing the number of shortcuts required.
+		\item \textbf{Complexity:} \(O(n \log n)\) where \(n\) is the number of nodes.
+	\end{itemize}
+	
+	\subsection*{Step 2: Contracting Nodes and Adding Shortcuts}
+	\begin{itemize}
+		\item For each node, we analyze its neighbors to decide if shortcuts are needed.
+		\item Let \(d\) be the average degree of a node (the number of connections).
+		\item \textbf{Complexity:} \(O(m + n \cdot d^2)\), where \(m\) is the number of edges.
+	\end{itemize}
+	
+	\subsection*{Overall Preprocessing Complexity}
+	Combining the complexity for ranking and contraction, the overall preprocessing complexity becomes:
+	\[
+	O(n \cdot d^2 + m)
+	\]
+	
+	\section*{2. Query Complexity}
+	The query step uses a bidirectional Dijkstra search restricted to upward edges.
+	
+	\subsection*{Step 1: Forward and Reverse Search}
+	\begin{itemize}
+		\item The search proceeds from the source and target nodes simultaneously, using only upward edges.
+	\end{itemize}
+	
+	\subsection*{Step 2: Meeting at the Highest-Ranked Node}
+	\begin{itemize}
+		\item The two searches meet at the highest-ranked node on the shortest path.
+		\item The search space is reduced because we only consider upward edges.
+	\end{itemize}
+	
+	\subsection*{Search Complexity}
+	Let \(h\) be the height of the hierarchy, which is typically much smaller than the number of nodes. The search complexity becomes:
+	\[
+	O(h \log h)
+	\]
+	
+	\section*{Summary}
+	\begin{itemize}
+		\item \textbf{Preprocessing Complexity:} \(O(n \cdot d^2 + m)\)
+		\item \textbf{Query Complexity:} \(O(h \log h)\)
+	\end{itemize}
+	
+	The preprocessing may be computationally expensive for large graphs, but the query step becomes highly efficient, making CH well-suited for applications requiring fast real-time path queries.
 
 \section{Proof of correctness for ALT}\label{appendix:ALT:correctness}
 
