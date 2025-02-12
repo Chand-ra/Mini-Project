@@ -57,6 +57,7 @@
 		\item For a fibonacci heap, $V \times \mbox{Extract-Min}$ takes $O(V\log{V})$ time and $E \times \mbox{Decrease-Key}$ takes $O(E)$ time $\to$ a total complexity of $O(V\log{V} + E)$.
 	\end{itemize}
 	\section{Proof of correctness for A* search$^{\cite{A-star-Search-ref-one}}$}\label{appendix:astar:correctness}
+
 	We'll prove the correctness of A* search algorithm using mathematical induction. Let us define the following: \\
 	$f(s)$: Estimated total cost of the path from the start node to the goal node, passing through the current node. \\
 	$g(s)$: Cost of the shortest path from the start node to the current node. \\
@@ -71,6 +72,52 @@
 				\item The algorithm continues to explore nodes in order of increasing $f(v)$, ensuring the shortest path is found.
 			\end{itemize}
 		\item \textit{Conclusion}: If the goal $t$ is reached, $g(t)$ is the true shortest path cost and If $Q$ becomes empty, no path exists.
+	\end{itemize}
+\section{Proof of correctness for Bidirectional Search$^{\cite{Bidirectional-ref-one}}$}\label{appendix:Bidirectional:correctness}
+	\begin{itemize}
+		\item Let the shortest path length from $s$ to $t$ be $L$. A midpoint node $m$ exists on this path such that:
+		\begin{itemize}
+			\item If $L$ is even, $m$ is at distance $L/2$ from both $s$ and $t$.
+			\item If $L$ is odd, $m$ is at distance $\lfloor L/2 \rfloor$ from $s$ and $\lceil L/2 \rceil$ from $t$ (or vice versa).
+		\end{itemize}
+		In both cases, the forward search (from $s$) and backward search (from $t$) will reach $m$ after $d$ and $e$ steps, respectively, where $d + e = L$. Thus, $m$ will eventually be included in both frontiers.
+		\item Suppose the algorithm terminates with a path of length $L' > L$. Let $v$ be the meeting node, so $d_f(v) + d_b(v) = L'$. However, the shortest path implies the existence of a node $u$ where $d_f(u) + d_b(u) = L < L'$. Since BFS explores nodes in order of increasing distance, $u$ would have been encountered in both frontiers when the forward and backward searches reached depths $d_f(u)$ and $d_b(u)$, respectively. This contradicts the assumption that $L' > L$, proving the first meeting node corresponds to the shortest path.
+	\end{itemize}
+\section{Proof of complexity for Bidirectional Search$^{\cite{Bidirectional-ref-one}}$}\label{appendix:Bidirectional:complexity}
+	\begin{itemize}
+		\item The shortest path of length $d$ implies the forward and backward searches meet at depth $\frac{d}{2}$. Even if the path length is odd ($d = 2k + 1$), one search reaches depth $k + 1$, but asymptotically, $O(b^{d/2})$ dominates.
+		\item Each search (forward and backward) explores up to depth $\frac{d}{2}$.
+		\item  Nodes explored by each search: $O(b^{d/2}) \implies$ total nodes explored: $O(b^{d/2} + b^{d/2}) = O(b^{d/2})$.
+		\item Also, each search stores nodes up to depth $\frac{d}{2} \implies$  space for each search: $O(b^{d/2}) \implies$ Total space: $O(b^{d/2} + b^{d/2}) = O(b^{d/2})$.
+	\end{itemize}
+
+\section{Proof of correctness for Contraction Hierarchies$^{\cite{Contraction-hiearchies-ref-one}}$}\label{appendix:contraction:correctness}
+	 Since the query phase uses Bidirectional Search, the proof of it's correctness can be referred to at \textbf{Appendix \ref{appendix:Bidirectional:correctness}}. We'll prove the correctness of the query phase using mathematical induction.
+	\begin{itemize}
+		\item \textit{Inductive hypothesis}: Assume that after contracting the first \(k\) nodes, the remaining graph still preserves all shortest paths.
+		\item \textit{Base case}: The original graph \(G\) trivially preserves all shortest paths because no nodes have been contracted.
+		\item \textit{Induction step}: 	When contracting the $(k+1)^{th}$ node \(v\), we check each pair of neighbors \((u, w)\):
+		\begin{itemize}
+			\item Case 1: If the shortest path between \(u\) and \(w\) goes through \(v\), add a shortcut from \(u\) to \(w\) with weight  
+			\[ w(u, w) = w(u, v) + w(v, w) \]
+			This ensures that paths going through \(v\) are preserved.
+			\item Case 2: If there already exists a direct or alternative path between \(u\) and \(w\) not involving \(v\), then the shortcut is redundant but does no harm.
+		\end{itemize}
+		\item \textit{Conclusion}: By the inductive hypothesis, after each contraction, the graph still preserves all shortest paths. Therefore, preprocessing maintains correctness.
+	\end{itemize}
+
+\section{Proof of complexity for Contraction Hierarchies$^{\cite{Contraction-hiearchies-ref-one}}$}\label{appendix:constraction:complexity}
+	\begin{itemize}
+		\item Assign a unique rank (or order) to each node in the graph. This rank determines the order in which nodes are contracted. This takes time $O(V \log V)$, where $V$ is the number of nodes.
+		\item For each node $v$ in order of increasing rank:
+			\begin{itemize}
+				\item Remove $v$ from the graph.
+				\item Add shortcuts between pairs of neighbors of $v$ if the shortest path between them passes through $v$.
+				\item Store the shortcuts and the original edges in a hierarchical structure.
+			\end{itemize}
+			This takes time $O(V \cdot d^{2})$, where $d$ is the average degree of a node.
+		\item The graph is divided into levels based on node ranks, higher-ranked nodes are at higher levels in the hierarchy. This takes time $O(V + E + S)$ where $S$ is the numbet of shortcuts.
+		\item The query phase can be computed using Dijkstra's, which has a time complexity of $O((V + E) \log V)$.
 	\end{itemize}
 
 \section{Proof of correctness for ALT$^{\cite{ALT-ref-one}}$}\label{appendix:ALT:correctness}
