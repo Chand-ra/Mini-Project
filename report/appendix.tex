@@ -3,7 +3,7 @@
 \phantomsection
 \begin{appendices}
 	\chapter{}
-	\section{Proof of correctness for BFS}\label{appendix:bfs:correctness}
+	\section{Proof of correctness for BFS$^{\cite{BFS-ref-one}}$}\label{appendix:bfs:correctness}
 		We'll prove the correctness of BFS using mathematical induction.
 		\begin{itemize}
 			\item \textit{Inductive hypothesis}: For all nodes at distance
@@ -12,7 +12,7 @@
 			\item \textit{Induction step}: Assume the hypothesis is true for nodes at a distance $k$ from $s$. Then their neighbours (nodes at distance $k + 1$) are enqueued and assigned $distance = k + 1$ before any nodes at $distance > k + 1$ are processed.
 			\item \textit{Conclusion}: BFS computes the shortest possible path for all reachable nodes.
 		\end{itemize}
-	\section{Proof of complexity for BFS}\label{appendix:bfs:complexity}
+	\section{Proof of complexity for BFS$^{\cite{BFS-ref-one}}$}\label{appendix:bfs:complexity}
 		Let us assume a graph $G(V, E)$ with $V$ vertices and $E$ edges.
 	\begin{itemize}
 		\item Mark all $V$ vertices as unvisited. This takes $O(V)$ time.
@@ -22,7 +22,7 @@
 		\item Summing over all vertices, the total edge-processing time is $O(E)$.
 	\end{itemize}
 		Thus, the overall time complexity is $O(V+E)$.
-	\section{Proof of correctness for Bellman-Ford}\label{appendix:bellford:correctness}
+	\section{Proof of correctness for Bellman-Ford$^{\cite{Bellman-ford-ref-one}}$}\label{appendix:bellford:correctness}
 	We'll prove the correctness of Bellman-Ford algorithm using mathematical induction.
 	\begin{itemize}
 		\item \textit{Inductive hypothesis}: After $k$ iterations, $distance[v]$ is the length of the shortest path from $s$ to $v$ using at most $k$ edges.
@@ -31,7 +31,7 @@
 		\item \textit{Conclusion}: After $V-1$ iterations, all shortest paths with at most $V-1$ edges have been found. Since a shortest path in a graph with $V$ vertices cannot have more than $V-1$ edges, the algorithm is correct.
 		\item \textit{Negative cycle detection}: After $V - 1$ iterations, if any $distance[v]$ can still be improved (i.e. $distance[u]+w(u,v)<distance[v]$ for some edge $(u,v)$), then the graph contains a negative-weight cycle reachable from $s$.
 	\end{itemize}
-	\section{Proof of complexity for Bellman-Ford}\label{appendix:bellford:complexity}
+	\section{Proof of complexity for Bellman-Ford$^{\cite{Bellman-ford-ref-one}}$}\label{appendix:bellford:complexity}
 	Let us assume a graph $G(V, E)$ with $V$ vertices and $E$ edges.
 	\begin{itemize}
 		\item Set $distance[s]=0$ and $distance[v]=\infty$ for all $v \neq s$. This takes $O(V)$ time.
@@ -39,7 +39,7 @@
 		\item For negative cycle detection, relax all the edges once more. This takes $O(E)$ time.
 	\end{itemize}
 	The dominant term is the relaxation step, which takes $O(V \cdot E)$ time, hence the overall complexity of the algorithm is $O(V \cdot E)$.
-	\section{Proof of correctness for Dijkstra's}\label{appendix:dijkstra:correctness}
+	\section{Proof of correctness for Dijkstra's$^{\cite{Dijikstra-ref-one}}$}\label{appendix:dijkstra:correctness}
 	We'll prove the correctness of Dijkstra's algorithm using mathematical induction.
 	\begin{itemize}
 		\item \textit{Inductive hypothesis}: After $k$ vertices are extracted from $Q$, their distance distance values are the correct shortest path distances from $s$.
@@ -47,7 +47,7 @@
 		\item \textit{Induction step}: Let $u$ be the $(k+1)^{th}$ vertex extracted from $Q$. Suppose there exists a shorter path to $u$ not using the extracted vertices. This path must leave the set of extracted vertices at some edge $(x,y)$, but since $w(x,y) \geq 0$, this would imply $distance[y]<distance[u]$, contradicting $u$’s extraction.
 		\item \textit{Conclusion}: After all vertices are processed, the $distance$ array contains the correct shortest path distances.
 	\end{itemize}
-	\section{Proof of complexity for Dijkstra's}\label{appendix:dijkstra:complexity}
+	\section{Proof of complexity for Dijkstra's $^{\cite{Dijikstra-ref-one}}$}\label{appendix:dijkstra:complexity}
 	Let us assume a graph $G(V, E)$ with $V$ vertices and $E$ edges. In a priority-queue based implementation of the algorithm,
 	\begin{itemize}
 		\item Each vertex is extracted once ($V \times \mbox{Extract-Min})$ and each edge is relaxed once $(E \times \mbox{Decrease-Key})$.
@@ -56,7 +56,7 @@
 		\item For a binary heap, $V \times \mbox{Extract-Min}$ takes $O(V\log{V})$ time and $E \times \mbox{Decrease-Key}$ takes $O(E\log{V})$ time $\to$ a total complexity of $O((V + E)\log{V})$
 		\item For a fibonacci heap, $V \times \mbox{Extract-Min}$ takes $O(V\log{V})$ time and $E \times \mbox{Decrease-Key}$ takes $O(E)$ time $\to$ a total complexity of $O(V\log{V} + E)$.
 	\end{itemize}
-	\section{Proof of correctness for A* search}\label{appendix:astar:correctness}
+	\section{Proof of correctness for A* search$^{\cite{A-star-Search-ref-one}}$}\label{appendix:astar:correctness}
 	We'll prove the correctness of A* search algorithm using mathematical induction. Let us define the following: \\
 	$f(s)$: Estimated total cost of the path from the start node to the goal node, passing through the current node. \\
 	$g(s)$: Cost of the shortest path from the start node to the current node. \\
@@ -73,7 +73,7 @@
 		\item \textit{Conclusion}: If the goal $t$ is reached, $g(t)$ is the true shortest path cost and If $Q$ becomes empty, no path exists.
 	\end{itemize}
 
-\section{Proof of correctness for ALT}\label{appendix:ALT:correctness}
+\section{Proof of correctness for ALT$^{\cite{ALT-ref-one}}$}\label{appendix:ALT:correctness}
 
 \begin{itemize}
 	\item Admissibility of $h(v)$: A heuristic is admissible if it never overestimates the true distance:  
@@ -100,7 +100,7 @@
 \end{itemize}
 Since $ h(v) $ is both admissible and consistent, the ALT algorithm guarantees optimal shortest paths.
 
-\section{Proof of complexity for ALT}\label{appendix:ALT:complexity}
+\section{Proof of complexity for ALT$^{\cite{ALT-ref-one}}$}\label{appendix:ALT:complexity}
 	\begin{itemize}
 		\item Landmark Selection:
 			\begin{itemize}
@@ -111,7 +111,7 @@ Since $ h(v) $ is both admissible and consistent, the ALT algorithm guarantees o
 		\item Query Phase Complexity: The A* search algorithm with ALT uses the ALT heuristic $ h(v) $ instead of a simple heuristic (like Euclidean distance). The time complexity of the A* search depends on the number of nodes expanded during the search and the priority queue operations. In the worst case, the complexity is $ O((|V| + |E|) \log |V|) $. The average query time is generally much faster, but it is difficult to bound precisely without empirical data.		
 	\end{itemize}
 
-\section{Proof of correctness for Hub Labellling}\label{appendix:Hub Labelling:correctness}
+\section{Proof of correctness for Hub Labellling$^{\cite{HL-ref-one}}$}\label{appendix:Hub Labelling:correctness}
 	\begin{itemize}
 		\item During the preprocessing phase of the Hub Labeling algorithm, we ensure that for any pair of nodes $ u $ and $ v $, their labels $ L(u) $ and $ L(v) $ share at least one common hub $ h $ that lies on the shortest path between $ u $ and $ v $.
 		\item Formally, for any two nodes $ u, v \in V $, there exists a hub $ h \in L(u) \cap L(v) $ such that $ h $ lies on the shortest path between $ u $ and $ v $, i.e., the path $ u \to h \to v $ is a valid shortest path. Thus, this \textit{Label Cover Property} ensures that the correct hubs are selected in the query phase and the algorithm can always compute the shortest path.
@@ -120,7 +120,7 @@ Since $ h(v) $ is both admissible and consistent, the ALT algorithm guarantees o
 		\item Therefore, the Hub Labeling algorithm correctly computes the shortest path for any query $ (u, v) $, as it always finds the optimal hub $ h $ and ensures that the sum of distances $ d(u, h) + d(h, v) $ corresponds to the actual shortest path distance.
 	\end{itemize}
 
-\section{Proof of complexity for Hub Labelling}\label{appendix:Hub Labelling:Complexity}
+\section{Proof of complexity for Hub Labelling$^{\cite{HL-ref-one}}$}\label{appendix:Hub Labelling:Complexity}
 	\begin{itemize}
 		\item For each node $v$, compute the forward and backward labels using Dijkstra's algorithm or a similar shortest path algorithm.
 		\item The time complexity for computing labels for all nodes is $O(V \cdot (V+E)\log V)$, where $V$ is the number of nodes and $E$ is the number of edges.
