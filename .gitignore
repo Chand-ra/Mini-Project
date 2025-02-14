@@ -3,3 +3,6 @@
 *.log
 *.out
 *.toc
+*.pyc
+*.json
+*.mp4
