@@ -263,6 +263,47 @@
 % Refer figure \ref{fig:label}.
 
 \section{Summary of Findings}
+	
+		\begin{table}[ht]
+			\centering
+			\resizebox{1.22\textwidth}{!}
+			{
+				\begin{tabular}{|l|l|l|l|l|}
+					
+					\hline
+					\multicolumn{1}{|c|}{\textbf{Algorithm}} & \multicolumn{1}{c|}{\textbf{Latency}} & \multicolumn{1}{c|}{\textbf{Space}} & \multicolumn{1}{c|}{\textbf{Strengths}} & \multicolumn{1}{c|}{\textbf{Weaknesses}} \\ \hline
+					
+					\textbf{Dijkstra’s} & $ O(E + V \cdot \log V) $ & $ O(V) $ & 
+					\begin{tabular}{l} $\bullet$ Optimal for all graphs \\ $\bullet$ Works for directed/undirected \\ $\bullet$ Simple implementation \end{tabular} &
+					\begin{tabular}{l} $\bullet$ Slow on large/dense graphs \\ $\bullet$ Not for graphs with negative weights \\ $\bullet$ High memory use \end{tabular} \\ \hline
+					
+					\textbf{A*} & $ O(E + V \cdot \log V) $ & $ O(V) $ &
+					\begin{tabular}{l} $\bullet$ Faster with good heuristics \\ $\bullet$ Optimal if heuristic is admissible \\ $\bullet$ Faster on large spaces \end{tabular} &
+					\begin{tabular}{l} $\bullet$ Dependent on heuristic \\ $\bullet$ Heuristic design complexity \\ $\bullet$ Less efficient without good heuristics \end{tabular} \\ \hline
+					
+					\textbf{CH} & $ O((V + E) \cdot \log V) $ & $ O(V + E) $ &
+					\begin{tabular}{l} $\bullet$ Very fast with precomputed hierarchy \\ $\bullet$ Effective on dense graphs \\ $\bullet$ Scalable for large graphs \end{tabular} &
+					\begin{tabular}{l} $\bullet$ Expensive preprocessing \\ $\bullet$ Not dynamic \\ $\bullet$ Limited flexibility \end{tabular} \\ \hline
+					
+					\textbf{ALT } & $ O(L \cdot (E + V \cdot \log V)) $ & $ O(L \cdot V) $ &
+					\begin{tabular}{l} $\bullet$ Faster than A* \\ $\bullet$ Reduces search space \\ $\bullet$ Good for multiple queries \end{tabular} &
+					\begin{tabular}{l} $\bullet$ Expensive landmark selection \\ $\bullet$ Performance varies with landmark choice \\ $\bullet$ High space usage \end{tabular} \\ \hline
+					
+					\textbf{B-A*} & $ O(b^{d/2}) $ & $ O(b^{d/2}) $ &
+					\begin{tabular}{l} $\bullet$ Faster by searching from both ends \\ $\bullet$ Reduces explored nodes significantly \\ $\bullet$ Good for symmetric graphs \end{tabular} &
+					\begin{tabular}{l} $\bullet$ Requires both start and goal nodes \\ $\bullet$ Extra memory for two searches \\ $\bullet$ Performance drops with asymmetric graphs \end{tabular} \\ \hline
+					
+				\end{tabular}
+			}
+			\caption{Summary of Shortest Path Algorithms}
+		\end{table}
+		
+
+	
+
+
+
+
 %\begin{figure}[htb]
 %\centering
 %\includegraphics[scale=0.3]{./glider} % e.g. insert ./image for image.png in the working directory, adjust scale as necessary
