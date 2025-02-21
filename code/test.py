@@ -38,3 +38,4 @@ def test_algorithm(algorithm):
 # ---------------------------
 test_algorithm(algorithms.dijkstra)
 #test_algorithm(algorithms.astar)
+test_algorithm(algorithms.bidirectional_astar)
