@@ -111,6 +111,7 @@ class bidAstar_Animator:
         video_writer.release()
         pygame.quit()
 
+
     def _run_animation_loop(self, setup, screen, clock, font, save_video=True, video_writer=None, fps=30):
         current_f_frame, current_b_frame = 0, 0
         animation_start_time = time.time()
