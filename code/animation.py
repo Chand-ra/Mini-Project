@@ -3,6 +3,7 @@ import time
 import cv2
 import numpy as np
 
+
 class Animator:
     def __init__(self, graph, start, end):
         self.G = graph
@@ -11,7 +12,7 @@ class Animator:
     def _common_setup(self, algorithm):
         """Shared setup between animation and video recording"""
         G, start_node, end_node = self.G, self.start_node, self.end_node
-        
+
         # Run algorithm and time it
         start_time = time.time()
         visited_nodes, visited_edges, optimal_path = algorithm(G, start_node, end_node)
@@ -42,7 +43,7 @@ class Animator:
 
         optimal_path_edges_screen = []
         for i in range(len(optimal_path) - 1):
-            u, v = optimal_path[i], optimal_path[i+1]
+            u, v = optimal_path[i], optimal_path[i + 1]
             if u in node_pos and v in node_pos:
                 optimal_path_edges_screen.append((node_pos[u], node_pos[v]))
 
@@ -69,11 +70,11 @@ class Animator:
         """Run interactive animation"""
         setup = self._common_setup(algorithm)
         screen_width, screen_height = setup['screen_size']
-        
+
         # Pygame initialization
         pygame.init()
-        screen = pygame.display.set_mode((screen_width, screen_height), 
-                                        pygame.HWSURFACE | pygame.DOUBLEBUF)
+        screen = pygame.display.set_mode((screen_width, screen_height),
+                                         pygame.HWSURFACE | pygame.DOUBLEBUF)
         pygame.display.set_caption("Pathfinding Animation")
         clock = pygame.time.Clock()
         font = pygame.font.SysFont("Arial", 24)
@@ -92,12 +93,12 @@ class Animator:
         """Save animation to video file"""
         setup = self._common_setup(algorithm)
         screen_width, screen_height = setup['screen_size']
-        
+
         # Video writer setup
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video_writer = cv2.VideoWriter(filename, fourcc, fps, 
-                                      (screen_width, screen_height))
-        
+        video_writer = cv2.VideoWriter(filename, fourcc, fps,
+                                       (screen_width, screen_height))
+
         # Pygame initialization
         pygame.init()
         screen = pygame.display.set_mode((screen_width, screen_height))
@@ -114,12 +115,12 @@ class Animator:
             video_writer=video_writer,
             fps=fps
         )
-        
+
         video_writer.release()
         pygame.quit()
 
-    def _run_animation_loop(self, setup, screen, clock, font, 
-                           save_video=False, video_writer=None, fps=30):
+    def _run_animation_loop(self, setup, screen, clock, font,
+                            save_video=False, video_writer=None, fps=30):
         """Shared animation loop logic"""
         current_frame = 0
         animation_start_time = time.time()
@@ -132,8 +133,8 @@ class Animator:
         background.fill((255, 255, 255))
         for u, v, _ in self.G.edges(data=True):
             if u in setup['node_pos'] and v in setup['node_pos']:
-                pygame.draw.aaline(background, (200, 200, 200), 
-                                 setup['node_pos'][u], setup['node_pos'][v])
+                pygame.draw.aaline(background, (200, 200, 200),
+                                   setup['node_pos'][u], setup['node_pos'][v])
 
         visited_edges_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
         visited_edges_surface.fill((0, 0, 0, 0))
@@ -154,8 +155,8 @@ class Animator:
 
             # Update visited edges surface if there are new edges to draw.
             if steps_this_frame > 0:
-                steps_this_frame = min(steps_this_frame, 
-                                     len(setup['visited_edges_screen']) - current_frame)
+                steps_this_frame = min(steps_this_frame,
+                                       len(setup['visited_edges_screen']) - current_frame)
                 for i in range(steps_this_frame):
                     start_pt, end_pt = setup['visited_edges_screen'][current_frame + i]
                     pygame.draw.aaline(visited_edges_surface, (0, 0, 255), start_pt, end_pt)
@@ -171,10 +172,10 @@ class Animator:
                     finish_time = time.time() - animation_start_time
 
             # Draw start/end nodes
-            pygame.draw.circle(screen, (255, 0, 0), 
-                             setup['node_pos'][self.start_node], 4)
-            pygame.draw.circle(screen, (255, 0, 0), 
-                             setup['node_pos'][self.end_node], 4)
+            pygame.draw.circle(screen, (255, 0, 0),
+                               setup['node_pos'][self.start_node], 4)
+            pygame.draw.circle(screen, (255, 0, 0),
+                               setup['node_pos'][self.end_node], 4)
 
             # Timer display
             elapsed_time = finish_time if finish_time is not None else (time.time() - animation_start_time)
@@ -192,8 +193,8 @@ class Animator:
             pygame.display.flip()
 
             # If animation is complete, wait a short delay then exit when saving a video.
-            if save_video and progress >= 1.0 and (time.time() - animation_start_time) >= (setup['animation_duration'] + end_delay):
+            if save_video and progress >= 1.0 and (time.time() - animation_start_time) >= (
+                    setup['animation_duration'] + end_delay):
                 running = False
 
             clock.tick(90 if not save_video else fps)
-
