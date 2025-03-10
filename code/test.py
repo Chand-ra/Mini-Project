@@ -36,5 +36,5 @@ def test_algorithm(algorithm):
 # ---------------------------
 # Driver Code
 # ---------------------------
-test_algorithm(algorithms.dijkstra)
-#test_algorithm(algorithms.astar)
+#test_algorithm(algorithms.dijkstra)
+test_algorithm(algorithms.astar)
