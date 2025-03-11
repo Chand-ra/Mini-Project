@@ -136,8 +136,67 @@ def bidirectional_dijkstra(graph, start, end):
     
     return visited_nodes, visited_edges, optimal_path
 
-def astar(G, start_node, end_node):
-    return 0;
+def astar(graph, start, end):
+    visited_nodes = []
+    visited_edges = []
+
+    nodes = graph.nodes()
+    coords = {node: (nodes[node]['x'], nodes[node]['y']) for node in nodes}
+    end_x, end_y = coords[end]
+
+    def h(u):
+        x, y = coords[u]
+        return math.hypot(end_x - x, end_y - y)
+    
+    # Initialize the open set as a priority queue with (f, node)
+    open_queue = []
+    heapq.heappush(open_queue, (h(start), start))
+    
+    # Dictionary to store the cost from start to each node
+    shortest_distance = {node: float('inf') for node in nodes}
+    shortest_distance[start] = 0
+    
+    # Dictionary to reconstruct the optimal path
+    prev = {}    
+    processed = set()
+    
+    while open_queue:
+        current_f, current_node = heapq.heappop(open_queue)
+        if current_node in processed:
+            continue
+        processed.add(current_node)
+        visited_nodes.append(current_node)
+        
+        # If we've reached the target, break early.
+        if current_node == end:
+            break
+        current_g = shortest_distance[current_node]
+        # Process neighbors
+        for neighbor in graph.neighbors(current_node):
+            # Get the minimum edge length between current_node and neighbor
+            edge_length = min(data['length'] for data in graph[current_node][neighbor].values())
+            new_g = current_g + edge_length
+            if new_g < shortest_distance.get(neighbor, float('inf')):
+                shortest_distance[neighbor] = new_g
+                prev[neighbor] = current_node
+                f_score = new_g + h(neighbor)
+                heapq.heappush(open_queue, (f_score, neighbor))
+                visited_edges.append((current_node, neighbor))
+    
+    # Reconstruct the path from start to end, if found.
+    optimal_path = []
+    if end in processed:
+        node = end
+        path = []
+        while node != start:
+            path.append(node)
+            node = prev.get(node)
+            if node is None:
+                break
+        path.append(start)
+        optimal_path = list(reversed(path))
+    
+    return visited_nodes, visited_edges, optimal_path
 
 def bidirectional_astar(graph, start, end):
     visited_nodes = []
