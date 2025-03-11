@@ -1,4 +1,5 @@
 import heapq
+import math
 
 # The custom algorithm must return visted nodes, visited edges and the optimal path
 def dijkstra(graph, start, end):
@@ -138,10 +139,136 @@ def bidirectional_dijkstra(graph, start, end):
 def astar(G, start_node, end_node):
     return 0;
 
-def bidirectional_astar(G, start_node, end_node):
-    return 0;
+def bidirectional_astar(graph, start, end):
+    visited_nodes = []
+    visited_edges = []
+    
+    # Precompute coordinates for all nodes
+    nodes = graph.nodes()
+    coords = {node: (nodes[node]['x'], nodes[node]['y']) for node in nodes}
+    
+    # Precompute heuristic values for both directions
+    end_x, end_y = coords[end]
+    start_x, start_y = coords[start]
+    
+    def h_forward(u):
+        x, y = coords[u]
+        return math.hypot(end_x - x, end_y - y)
+    
+    def h_backward(u):
+        x, y = coords[u]
+        return math.hypot(start_x - x, start_y - y)
+    
+    # Forward search initialization
+    forward_queue = []
+    heapq.heappush(forward_queue, (h_forward(start), start))
+    shortest_distance_forward = {node: float('inf') for node in nodes}
+    shortest_distance_forward[start] = 0
+    forward_prev = {}
+    
+    # Backward search initialization
+    backward_queue = []
+    heapq.heappush(backward_queue, (h_backward(end), end))
+    shortest_distance_backward = {node: float('inf') for node in nodes}
+    shortest_distance_backward[end] = 0
+    backward_prev = {}
+    
+    best_total_cost = float('inf')
+    meeting_node = None
+    processed_forward = set()
+    processed_backward = set()
+    
+    while forward_queue and backward_queue:
+        # Process forward search
+        f_current_f, current_node = heapq.heappop(forward_queue)
+        if f_current_f > best_total_cost:
+            break
+        
+        if current_node in processed_forward:
+            continue
+        processed_forward.add(current_node)
+        visited_nodes.append(current_node)
+        
+        current_g = shortest_distance_forward[current_node]
+        
+        # Check backward search results
+        if current_node in processed_backward:
+            total_cost = current_g + shortest_distance_backward[current_node]
+            if total_cost < best_total_cost:
+                best_total_cost = total_cost
+                meeting_node = current_node
+        
+        # Expand forward neighbors
+        for neighbor in graph.neighbors(current_node):
+            edge_length = min(data['length'] for data in graph[current_node][neighbor].values())
+            new_g = current_g + edge_length
+            if new_g < shortest_distance_forward.get(neighbor, float('inf')):
+                shortest_distance_forward[neighbor] = new_g
+                forward_prev[neighbor] = current_node
+                f_score = new_g + h_forward(neighbor)
+                heapq.heappush(forward_queue, (f_score, neighbor))
+                visited_edges.append((current_node, neighbor))
+        
+        # Process backward search
+        b_current_f, current_node = heapq.heappop(backward_queue)
+        if b_current_f > best_total_cost:
+            break
+        
+        if current_node in processed_backward:
+            continue
+        processed_backward.add(current_node)
+        visited_nodes.append(current_node)
+        
+        current_g = shortest_distance_backward[current_node]
+        
+        # Check forward search results
+        if current_node in processed_forward:
+            total_cost = shortest_distance_forward[current_node] + current_g
+            if total_cost < best_total_cost:
+                best_total_cost = total_cost
+                meeting_node = current_node
+        
+        # Expand backward predecessors
+        for predecessor in graph.predecessors(current_node):
+            edge_length = min(data['length'] for data in graph[predecessor][current_node].values())
+            new_g = current_g + edge_length
+            if new_g < shortest_distance_backward.get(predecessor, float('inf')):
+                shortest_distance_backward[predecessor] = new_g
+                backward_prev[predecessor] = current_node
+                f_score = new_g + h_backward(predecessor)
+                heapq.heappush(backward_queue, (f_score, predecessor))
+                visited_edges.append((predecessor, current_node))
+        
+        # Early termination check
+        if forward_queue and backward_queue:
+            forward_min = forward_queue[0][0]
+            backward_min = backward_queue[0][0]
+            if forward_min + backward_min >= best_total_cost:
+                break
+    
+    # Path reconstruction (same as before)
+    optimal_path = []
+    if meeting_node is not None:
+        # Forward path
+        path = []
+        node = meeting_node
+        while node is not None:
+            path.append(node)
+            node = forward_prev.get(node)
+        path.reverse()
+        
+        # Backward path
+        node = backward_prev.get(meeting_node)
+        while node is not None:
+            path.append(node)
+            node = backward_prev.get(node)
+        
+        optimal_path = path
+    
+    return visited_nodes, visited_edges, optimal_path
 
-def contraction_hierarchies(G, start_node, end_node):
+
+def preprocess_contraction_hierarchy(G):
     return 0;
 
 def final_algorithm(G, start_node, end_node):
