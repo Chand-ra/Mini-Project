@@ -1,9 +1,10 @@
 import heapq
 import math
+import networkx as nx
 
 # The custom algorithm must return visted nodes, visited edges and the optimal path
 def dijkstra(graph, start, end):
-    visited_nodes, visited_edges, optimal_path = [], [], []
+    visited_edges, optimal_path = [], []
 
     # Use proper priority queue with (cost, node, path)
     queue = []
@@ -15,7 +16,6 @@ def dijkstra(graph, start, end):
         current_cost, current_node, current_path = heapq.heappop(queue)  # Proper priority extraction
         if current_cost > shortest_distance[current_node]:
             continue
-        visited_nodes.append(current_node)
         if current_node == end:
             optimal_path = current_path
             break
@@ -31,10 +31,9 @@ def dijkstra(graph, start, end):
                 # Record edge only when it's actually used in the optimal path
                 visited_edges.append((current_node, neighbor))
     
-    return visited_nodes, visited_edges, optimal_path
+    return visited_edges, optimal_path
 
 def bidirectional_dijkstra(graph, start, end):
-    visited_nodes = []
     visited_edges = []
     
     # Forward search initialization
@@ -64,8 +63,7 @@ def bidirectional_dijkstra(graph, start, end):
             current_cost, current_node = heapq.heappop(forward_queue)
             if current_cost > shortest_distance_forward[current_node]:
                 continue
-            visited_nodes.append(current_node)
-            
+
             # Check if backward search has reached current_node
             if shortest_distance_backward[current_node] != float('inf'):
                 total_cost = current_cost + shortest_distance_backward[current_node]
@@ -88,7 +86,6 @@ def bidirectional_dijkstra(graph, start, end):
             current_cost, current_node = heapq.heappop(backward_queue)
             if current_cost > shortest_distance_backward[current_node]:
                 continue
-            visited_nodes.append(current_node)
             
             # Check if forward search has reached current_node
             if shortest_distance_forward[current_node] != float('inf'):
@@ -134,10 +131,9 @@ def bidirectional_dijkstra(graph, start, end):
         
         optimal_path = forward_path + backward_path
     
-    return visited_nodes, visited_edges, optimal_path
+    return visited_edges, optimal_path
 
 def astar(graph, start, end):
-    visited_nodes = []
     visited_edges = []
 
     nodes = graph.nodes()
@@ -165,8 +161,7 @@ def astar(graph, start, end):
         if current_node in processed:
             continue
         processed.add(current_node)
-        visited_nodes.append(current_node)
-        
+
         # If we've reached the target, break early.
         if current_node == end:
             break
@@ -196,10 +191,9 @@ def astar(graph, start, end):
         path.append(start)
         optimal_path = list(reversed(path))
     
-    return visited_nodes, visited_edges, optimal_path
+    return visited_edges, optimal_path
 
 def bidirectional_astar(graph, start, end):
-    visited_nodes = []
     visited_edges = []
     
     # Precompute coordinates for all nodes
@@ -246,8 +240,6 @@ def bidirectional_astar(graph, start, end):
         if current_node in processed_forward:
             continue
         processed_forward.add(current_node)
-        visited_nodes.append(current_node)
-        
         current_g = shortest_distance_forward[current_node]
         
         # Check backward search results
@@ -276,8 +268,6 @@ def bidirectional_astar(graph, start, end):
         if current_node in processed_backward:
             continue
         processed_backward.add(current_node)
-        visited_nodes.append(current_node)
-        
         current_g = shortest_distance_backward[current_node]
         
         # Check forward search results
@@ -324,11 +314,216 @@ def bidirectional_astar(graph, start, end):
         
         optimal_path = path
     
-    return visited_nodes, visited_edges, optimal_path
+    return visited_edges, optimal_path
+
+class ALTPreprocessor:
+    def __init__(self, graph, num_landmarks=8):  # Increased default landmarks
+        self.graph = graph
+        self.num_landmarks = num_landmarks
+        self.landmarks = []
+        self.forward_distances = {}
+        self.backward_distances = {}
+
+        self._select_landmarks()
+        self._precompute_distances()
+
+    def _select_landmarks(self):
+        if not self.graph:
+            return
+
+        components = list(nx.strongly_connected_components(self.graph))
+        if not components:
+            return
+        largest_component = max(components, key=len)
+        subgraph = self.graph.subgraph(largest_component)  # Removed .copy() for efficiency
+        nodes = list(subgraph.nodes())
+
+        if not nodes:
+            return
+
+        self.landmarks = [nodes[0]]
+        landmarks_set = {nodes[0]}
+
+        # Initialize minimum distances with the first landmark
+        try:
+            initial_dists = nx.shortest_path_length(subgraph, nodes[0], weight='length')
+        except nx.NetworkXNoPath:
+            initial_dists = {}
+        min_dist = {node: initial_dists.get(node, float('inf')) for node in nodes}
+
+        while len(self.landmarks) < self.num_landmarks and len(self.landmarks) < len(nodes):
+            max_dist = -1
+            next_landmark = None
+
+            # Find the node with the maximum minimal distance
+            for node in nodes:
+                if node in landmarks_set:
+                    continue
+                current_min = min_dist[node]
+                if current_min > max_dist:
+                    max_dist = current_min
+                    next_landmark = node
+
+            if next_landmark is None:
+                break  # No suitable node found
+
+            self.landmarks.append(next_landmark)
+            landmarks_set.add(next_landmark)
+
+            # Update min_dist with distances from the new landmark
+            try:
+                dists = nx.shortest_path_length(subgraph, next_landmark, weight='length')
+            except nx.NetworkXNoPath:
+                continue
+
+            for node in nodes:
+                new_dist = dists.get(node, float('inf'))
+                if new_dist < min_dist[node]:
+                    min_dist[node] = new_dist
+
+    def _precompute_distances(self):
+        reversed_graph = nx.reverse(self.graph)  # Compute once and reuse
+        for L in self.landmarks:
+            if L not in self.graph:
+                continue
+            try:
+                self.forward_distances[L] = nx.single_source_dijkstra_path_length(self.graph, L, weight='length')
+                self.backward_distances[L] = nx.single_source_dijkstra_path_length(reversed_graph, L, weight='length')
+            except nx.NetworkXNoPath:
+                continue
 
 
-def preprocess_contraction_hierarchy(G):
-    return 0;
+def bidirectional_alt_query(graph, start, end, preprocessor):
+    visited_edges = []
+    
+    landmarks = preprocessor.landmarks
+    fw_dists = preprocessor.forward_distances
+    bw_dists = preprocessor.backward_distances
 
-def final_algorithm(G, start_node, end_node):
-    return 0;
+    # Precompute all landmark data for faster access
+    forward_data = []
+    backward_data = []
+    for L in landmarks:
+        bwd = bw_dists.get(L, {})
+        fwd = fw_dists.get(L, {})
+        forward_data.append((
+            bwd.get(end, float('inf')),
+            fwd.get(end, float('inf')),
+            bwd,
+            fwd
+        ))
+        backward_data.append((
+            bw_dists.get(L, {}).get(start, float('inf')),
+            fw_dists.get(L, {}).get(start, float('inf')),
+            bw_dists.get(L, {}),
+            fw_dists.get(L, {})
+        ))
+
+    # Optimized heuristic functions
+    def h_forward(u):
+        max_h = 0
+        for d_end_L, d_L_end, bwd, fwd in forward_data:
+            du = bwd.get(u, float('inf'))
+            term1 = du - d_end_L
+            lu = fwd.get(u, float('inf'))
+            term2 = d_L_end - lu
+            max_h = max(max_h, term1, term2)
+        return max(max_h, 0)
+
+    def h_backward(u):
+        max_h = 0
+        for d_start_L, d_L_start, bwd, fwd in backward_data:
+            du = bwd.get(u, float('inf'))
+            term1 = du - d_start_L
+            lu = fwd.get(u, float('inf'))
+            term2 = d_L_start - lu
+            max_h = max(max_h, term1, term2)
+        return max(max_h, 0)
+
+    # Initialize data structures
+    forward_queue = []
+    heapq.heappush(forward_queue, (h_forward(start), start))
+    f_dist = {start: 0}
+    f_prev = {}
+    
+    backward_queue = []
+    heapq.heappush(backward_queue, (h_backward(end), end))
+    b_dist = {end: 0}
+    b_prev = {}
+    
+    best_cost = float('inf')
+    meeting_node = None
+    processed_f = set()
+    processed_b = set()
+    
+    while forward_queue and backward_queue:
+        # Forward search
+        f_prio, u = heapq.heappop(forward_queue)
+        if f_prio > best_cost:
+            break
+        if u in processed_f:
+            continue
+        processed_f.add(u)
+
+        if u in processed_b:
+            new_cost = f_dist[u] + b_dist[u]
+            if new_cost < best_cost:
+                best_cost = new_cost
+                meeting_node = u
+        
+        for v in graph.neighbors(u):
+            edge_length = min(data['length'] for data in graph[u][v].values())
+            new_g = f_dist[u] + edge_length
+            if new_g < f_dist.get(v, float('inf')):
+                f_dist[v] = new_g
+                f_prev[v] = u
+                heapq.heappush(forward_queue, (new_g + h_forward(v), v))
+                visited_edges.append((u, v))
+        
+        # Backward search
+        b_prio, u = heapq.heappop(backward_queue)
+        if b_prio > best_cost:
+            break
+        if u in processed_b:
+            continue
+        processed_b.add(u)
+        
+        if u in processed_f:
+            new_cost = f_dist[u] + b_dist[u]
+            if new_cost < best_cost:
+                best_cost = new_cost
+                meeting_node = u
+        
+        for v in graph.predecessors(u):
+            edge_length = min(data['length'] for data in graph[v][u].values())
+            new_g = b_dist[u] + edge_length
+            if new_g < b_dist.get(v, float('inf')):
+                b_dist[v] = new_g
+                b_prev[v] = u
+                heapq.heappush(backward_queue, (new_g + h_backward(v), v))
+                visited_edges.append((v, u))
+        
+        # Early termination check
+        if forward_queue and backward_queue:
+            f_min = forward_queue[0][0]
+            b_min = backward_queue[0][0]
+            if f_min + b_min >= best_cost:
+                break
+    
+    # Path reconstruction
+    path = []
+    if meeting_node is not None:
+        # Forward path
+        node = meeting_node
+        while node in f_prev:
+            path.append(node)
+            node = f_prev[node]
+        path.reverse()
+        
+        # Backward path
+        node = meeting_node
+        while node in b_prev:
+            node = b_prev[node]
+            path.append(node)
+    
+    return visited_edges, path

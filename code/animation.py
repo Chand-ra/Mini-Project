@@ -4,18 +4,29 @@ import cv2
 import numpy as np
 
 class Animator:
-    def __init__(self, graph, start, end):
+    def __init__(self, graph, start, end, preprocessor=None):
         self.G = graph
         self.start_node, self.end_node = start, end
+        self.preprocessor = preprocessor
 
     def _common_setup(self, algorithm):
         """Shared setup between animation and video recording"""
         G, start_node, end_node = self.G, self.start_node, self.end_node
         
-        # Run algorithm and time it
-        start_time = time.time()
-        visited_nodes, visited_edges, optimal_path = algorithm(G, start_node, end_node)
-        T = time.time() - start_time
+        # Preprocessing phase
+        preprocessing_time = 0.0
+        if self.preprocessor is not None:
+            start_preprocess = time.time()
+            self.preprocessor._select_landmarks()
+            self.preprocessor._precompute_distances()
+            preprocessing_time = (time.time() - start_preprocess)
+
+        # Algorithm execution phase
+        algo_start = time.time()
+        visited_edges, optimal_path = algorithm(
+            G, start_node, end_node, *([self.preprocessor] if self.preprocessor else [])
+        )
+        algo_time = time.time() - algo_start
 
         # Calculate node positions
         nodes = list(G.nodes(data=True))
@@ -54,7 +65,7 @@ class Animator:
 
         # Animation timing
         speed_factor = 100
-        animation_duration = T * speed_factor
+        animation_duration = algo_time * speed_factor
 
         return {
             'screen_size': (screen_width, screen_height),
@@ -62,7 +73,9 @@ class Animator:
             'visited_edges_screen': visited_edges_screen,
             'optimal_path_surface': optimal_path_surface,
             'animation_duration': animation_duration,
-            'T': T
+            'preprocessing_time': preprocessing_time,
+            'algo_time': algo_time,
+            'T': algo_time  # Backward compatibility
         }
 
     def animate_path(self, algorithm):
@@ -138,7 +151,6 @@ class Animator:
         visited_edges_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
         visited_edges_surface.fill((0, 0, 0, 0))
 
-        # We'll terminate the loop after a fixed delay once animation completes.
         end_delay = 1.0  # seconds to show final frame
 
         while running:
@@ -152,7 +164,7 @@ class Animator:
             target_steps = int(progress * len(setup['visited_edges_screen']))
             steps_this_frame = max(target_steps - current_frame, 0)
 
-            # Update visited edges surface if there are new edges to draw.
+            # Update visited edges surface
             if steps_this_frame > 0:
                 steps_this_frame = min(steps_this_frame, 
                                      len(setup['visited_edges_screen']) - current_frame)
@@ -176,24 +188,28 @@ class Animator:
             pygame.draw.circle(screen, (255, 0, 0), 
                              setup['node_pos'][self.end_node], 4)
 
-            # Timer display
+            # Display timing information
             elapsed_time = finish_time if finish_time is not None else (time.time() - animation_start_time)
+            
+            # Preprocessing time (static display)
+            preprocess_text = font.render(f"Pre-processing Time: {setup['preprocessing_time']:.2f}s", True, (0, 0, 0))
+            screen.blit(preprocess_text, (10, 10))
+            
+            # Algorithm time (dynamic display)
             timer_text = font.render(f"Elapsed Time: {elapsed_time:.2f}s", True, (0, 0, 0))
-            screen.blit(timer_text, (10, 10))
+            screen.blit(timer_text, (10, 40))
 
-            # Video capture: use array3d to capture a copy of the screen.
+            # Video capture
             if save_video:
                 frame = pygame.surfarray.array3d(screen)
-                # Transpose from (width, height, channels) to (height, width, channels)
                 frame = np.transpose(frame, (1, 0, 2))
                 frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
                 video_writer.write(frame)
 
             pygame.display.flip()
 
-            # If animation is complete, wait a short delay then exit when saving a video.
+            # Exit condition
             if save_video and progress >= 1.0 and (time.time() - animation_start_time) >= (setup['animation_duration'] + end_delay):
                 running = False
 
             clock.tick(90 if not save_video else fps)
-

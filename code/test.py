@@ -13,7 +13,7 @@ def calculate_path_length(G, path):
 
 # Test function to compare your custom algorithm against NetworkX's shortest path
 def compare_paths(graph, start, end, algorithm):
-    _ , _, custom_optimal_path = algorithm(graph, start, end)
+    _, custom_optimal_path = algorithm(graph, start, end)
     nx_optimal_path = nx.shortest_path(graph, source=start, target=end, weight='length')
     
     # Calculate the total cost for both paths
