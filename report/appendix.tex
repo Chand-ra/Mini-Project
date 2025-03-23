@@ -177,5 +177,180 @@ Since $ h(v) $ is both admissible and consistent, the ALT algorithm guarantees o
 		\item Each node stores a forward label and a backward label. The space complexity for storing all labels is $O(V \cdot L)$, where $L$ is the average label size.
 	\end{itemize}
 	
+	\chapter{}
+	\section{Final Algorithm}\label{appendix:design:final_code}
+		\begin{lstlisting}
+			import heapq
+			import networkx as nx
+			
+			# ===== USAGE =====
+			# Step 1: Precompute ALT landmarks
+			# preprocessor = ALTPreprocessor(graph, num_landmarks=8)
+			
+			# Step 2: Run bidirectional A* with ALT heuristic
+			# visited_edges, shortest_path = bidirectional_alt_query(graph, start, end, preprocessor)
+			
+			class ALTPreprocessor:
+			"""
+			Precomputes shortest path distances from a set of landmarks to all nodes.
+			Used to improve the A* heuristic with landmark-based estimation.
+			"""
+			def __init__(self, graph, num_landmarks=8):
+			self.graph = graph
+			self.num_landmarks = num_landmarks
+			self.landmarks = []
+			self.forward_distances = {}
+			self.backward_distances = {}
+			
+			self._select_landmarks()
+			self._precompute_distances()
+			
+			def _select_landmarks(self):
+			""" Selects the best landmarks based on shortest path coverage. """
+			components = list(nx.strongly_connected_components(self.graph))
+			if not components:
+			return
+			largest_component = max(components, key=len)
+			subgraph = self.graph.subgraph(largest_component)
+			nodes = list(subgraph.nodes())
+			
+			if not nodes:
+			return
+			
+			self.landmarks = [nodes[0]]
+			landmarks_set = {nodes[0]}
+			
+			try:
+			initial_dists = nx.shortest_path_length(subgraph, nodes[0], weight='length')
+			except nx.NetworkXNoPath:
+			initial_dists = {}
+			min_dist = {node: initial_dists.get(node, float('inf')) for node in nodes}
+			
+			while len(self.landmarks) < self.num_landmarks and len(self.landmarks) < len(nodes):
+			max_dist, next_landmark = max(
+			((min_dist[node], node) for node in nodes if node not in landmarks_set),
+			default=(-1, None)
+			)
+			if next_landmark is None:
+			break
+			
+			self.landmarks.append(next_landmark)
+			landmarks_set.add(next_landmark)
+			
+			try:
+			dists = nx.shortest_path_length(subgraph, next_landmark, weight='length')
+			for node in nodes:
+			min_dist[node] = min(min_dist[node], dists.get(node, float('inf')))
+			except nx.NetworkXNoPath:
+			continue
+			
+			def _precompute_distances(self):
+			""" Precomputes shortest path distances from landmarks for fast heuristic lookups. """
+			reversed_graph = nx.reverse(self.graph)
+			for L in self.landmarks:
+			if L in self.graph:
+			try:
+			self.forward_distances[L] = nx.single_source_dijkstra_path_length(self.graph, L, weight='length')
+			self.backward_distances[L] = nx.single_source_dijkstra_path_length(reversed_graph, L, weight='length')
+			except nx.NetworkXNoPath:
+			continue
+			
+			
+			def bidirectional_alt_query(graph, start, end, preprocessor):
+			"""
+			Bidirectional A* search with ALT heuristic for fast shortest path queries.
+			
+			Parameters:
+			graph: NetworkX graph representing the road network.
+			start: Start node.
+			end: Destination node.
+			preprocessor: An instance of ALTPreprocessor containing landmark data.
+			
+			Returns:
+			visited_edges: List of edges explored during search.
+			optimal_path: List of nodes representing the shortest path.
+			"""
+			visited_edges = []
+			
+			# Retrieve precomputed ALT data
+			landmarks = preprocessor.landmarks
+			fw_dists = preprocessor.forward_distances
+			bw_dists = preprocessor.backward_distances
+			
+			# Prepare precomputed heuristic values for all landmarks
+			forward_data = [(bwd.get(end, float('inf')), fwd.get(end, float('inf')), bwd, fwd)
+			for L in landmarks if (bwd := bw_dists.get(L, {})) and (fwd := fw_dists.get(L, {}))]
+			
+			backward_data = [(bw_dists.get(L, {}).get(start, float('inf')), fw_dists.get(L, {}).get(start, float('inf')), 
+			bw_dists.get(L, {}), fw_dists.get(L, {})) for L in landmarks]
+			
+			# Define ALT-based heuristic functions
+			def h_forward(u):
+			return max(max(bwd.get(u, float('inf')) - d_end_L, d_L_end - fwd.get(u, float('inf')))
+			for d_end_L, d_L_end, bwd, fwd in forward_data if u in bwd or u in fwd)
+			
+			def h_backward(u):
+			return max(max(bwd.get(u, float('inf')) - d_start_L, d_L_start - fwd.get(u, float('inf')))
+			for d_start_L, d_L_start, bwd, fwd in backward_data if u in bwd or u in fwd)
+			
+			# Initialize forward and backward search
+			forward_queue = [(h_forward(start), start)]
+			f_dist, f_prev = {start: 0}, {}
+			
+			backward_queue = [(h_backward(end), end)]
+			b_dist, b_prev = {end: 0}, {}
+			
+			best_cost = float('inf')
+			meeting_node = None
+			processed_f, processed_b = set(), set()
+			
+			while forward_queue and backward_queue:
+			# Forward search step
+			f_prio, u = heapq.heappop(forward_queue)
+			if f_prio > best_cost:
+			break
+			if u in processed_f:
+			continue
+			processed_f.add(u)
+			
+			if u in processed_b:
+			new_cost = f_dist[u] + b_dist[u]
+			if new_cost < best_cost:
+			best_cost, meeting_node = new_cost, u
+			
+			for v in graph.neighbors(u):
+			edge_length = min(data['length'] for data in graph[u][v].values())
+			new_g = f_dist[u] + edge_length
+			if new_g < f_dist.get(v, float('inf')):
+			f_dist[v] = new_g
+			f_prev[v] = u
+			heapq.heappush(forward_queue, (new_g + h_forward(v), v))
+			visited_edges.append((u, v))
+			
+			# Backward search step
+			b_prio, u = heapq.heappop(backward_queue)
+			if b_prio > best_cost:
+			break
+			if u in processed_b:
+			continue
+			processed_b.add(u)
+			
+			if u in processed_f:
+			new_cost = f_dist[u] + b_dist[u]
+			if new_cost < best_cost:
+			best_cost, meeting_node = new_cost, u
+			
+			for v in graph.predecessors(u):
+			edge_length = min(data['length'] for data in graph[v][u].values())
+			new_g = b_dist[u] + edge_length
+			if new_g < b_dist.get(v, float('inf')):
+			b_dist[v] = new_g
+			b_prev[v] = u
+			heapq.heappush(backward_queue, (new_g + h_backward(v), v))
+			visited_edges.append((v, u))
+			
+			return visited_edges, [meeting_node] if meeting_node else []
+		\end{lstlisting}
+		
 	
 \end{appendices}

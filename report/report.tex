@@ -28,6 +28,25 @@
 \usepackage{ragged2e}
 \usepackage[bookmarks, colorlinks=false, pdfborder={0 0 0}, pdftitle={<pdf title here>}, pdfauthor={<author's name here>}, pdfsubject={<subject here>}, pdfkeywords={<keywords here>}]{hyperref} %for creating links in the pdf version and other additional pdf attributes, no effect on the printed document
 %\usepackage[final]{pdfpages} %for embedding another pdf, remove if not required
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Define Python syntax highlighting
+\lstdefinestyle{PythonStyle}{
+	language=Python,
+	basicstyle=\ttfamily\footnotesize,
+	keywordstyle=\color{blue},
+	stringstyle=\color{red},
+	commentstyle=\color{gray},
+	numbers=left,
+	numberstyle=\tiny\color{gray},
+	stepnumber=1,
+	breaklines=true,
+	showstringspaces=false,
+	tabsize=4
+}
+
+\lstset{style=PythonStyle}
 
 \begin{document}
 \renewcommand\bibname{References} %Renames "Bibliography" to "References" on ref page
