@@ -25,6 +25,7 @@
 \usepackage[pdftex]{graphicx} %for embedding images
 \usepackage{url} %for proper url entries
 \usepackage{amsmath}
+\usepackage{ragged2e}
 \usepackage[bookmarks, colorlinks=false, pdfborder={0 0 0}, pdftitle={<pdf title here>}, pdfauthor={<author's name here>}, pdfsubject={<subject here>}, pdfkeywords={<keywords here>}]{hyperref} %for creating links in the pdf version and other additional pdf attributes, no effect on the printed document
 %\usepackage[final]{pdfpages} %for embedding another pdf, remove if not required
 \usepackage{listings}
@@ -50,11 +51,15 @@
 \begin{document}
 \renewcommand\bibname{References} %Renames "Bibliography" to "References" on ref page
 
+\pagenumbering{gobble}
 %include other pages
 \input{./title.tex}
 \input{./acknow.tex}
 \input{./certificate.tex}
+\input{./approvalsheet.tex}
+\input{./declaration.tex}
 \input{./abstract.tex}
+
 
 \pagenumbering{roman} %numbering before main content starts
 \tableofcontents
