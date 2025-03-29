@@ -1,16 +1,322 @@
 \chapter{Implementation}
 
-\section{Tools and Technologies}
+\section{Implementation Details}
+
+\subsection{Key Python Files}
+\begin{itemize}
+	\item \texttt{algorithms.py} – Contains the core logic and pathfinding algorithms such as Dijkstra, A*, Bidirectional Dijkstra, Bidirectional A*, ALT, and Bidirectional ALT.
+	\item \texttt{animation.py} – Handles the visual output and animation of the pathfinding process using map data.
+	\item \texttt{pathfinder.py} – The main script that integrates the algorithms and visualization. It performs graph generation, pathfinding, and animation.
+	\item \texttt{test.py} – Used for testing the functionality and accuracy of implemented algorithms.
+\end{itemize}
+
+\subsection{Libraries Used}
+\begin{itemize}
+	\item \textbf{osmnx}: A Python package used to download and work with real-world street networks from OpenStreetMap. It is utilized for generating graphs of city maps and identifying nodes based on geographic coordinates. Key functions used include \texttt{graph\_from\_bbox} and \texttt{nearest\_nodes}.
+	
+	\item \textbf{Custom Modules}:
 	\begin{itemize}
-		\item Programming language and libraries/frameworks used (e.g., Python, NetworkX, CUDA for parallelism).
-		\item Hardware setup for experiments.
+		\item \texttt{animation.py} – Handles visualization and animation of pathfinding algorithms.
+		\item \texttt{algorithms.py} – Contains implementations of Dijkstra, A*, Bidirectional A*, ALT Preprocessing, and Bidirectional ALT algorithms.
 	\end{itemize}
-\section{Code Structure}
-	\begin{itemize}
-		\item Modular design: preprocessing, query execution, dynamic updates, and customization.
-	\end{itemize}
-\section{Dataset}
-	\begin{itemize}
-		\item Description of datasets used (e.g., OpenStreetMap, SNAP datasets).
-		\item Data preprocessing steps: parsing, cleaning, and formatting.
-	\end{itemize}
+\end{itemize}
+
+\subsection{Graph Generation and Pathfinding}
+The implementation uses \texttt{osmnx} to fetch map data of a specific region in Surat, bounded around SVNIT and Surat Railway Station. The graph is created using a bounding box, and the start and end points are mapped to the closest nodes in the graph using their latitude and longitude coordinates.
+
+\begin{lstlisting}[language=Python, caption={Pathfinding and Animation Code}, label={lst:pathfinding}]
+	import osmnx as ox
+	from animation import Animator
+	from algorithms import dijkstra, bidirectional_alt_query, ALTPreprocessor
+	
+	# Load map data of Surat
+	G = ox.graph_from_bbox(72.75, 72.87, 21.13, 21.22)
+	
+	# Define start and end nodes (SVNIT to Surat Railway Station)
+	start_node = ox.distance.nearest_nodes(G, 72.7865, 21.1634)
+	end_node = ox.distance.nearest_nodes(G, 72.8410, 21.2055)
+	
+	animator = Animator(G, start_node, end_node, ALTPreprocessor(G))
+	animator.animate_path(bidirectional_alt_query)
+\end{lstlisting}
+
+
+The above code demonstrates the following:
+\begin{itemize}
+	\item \textbf{Graph Creation}: A real-world street network graph of Surat is created using \texttt{osmnx}.
+	\item \textbf{Node Selection}: Start and end locations are converted into graph nodes using geographic coordinates.
+	\item \textbf{Pathfinding Algorithms}: Shortest paths are calculated using both Dijkstra’s algorithm and Bidirectional ALT (A*, Landmarks, Triangle inequality).
+	
+	\item \textbf{Visualization}: An animation is created using the \texttt{Animator} class to dynamically visualize the pathfinding process.
+\end{itemize}
+
+
+\section*{Algorithm Implementations and Details}
+
+\subsection*{Libraries Used}
+\begin{itemize}
+	\item \textbf{heapq} -- Efficient priority queue used for all algorithms.
+	\item \textbf{math} -- Supports mathematical calculations for heuristics in A* and ALT.
+	\item \textbf{networkx} -- Handles graph operations such as neighbor access and edge data.
+\end{itemize}
+
+\subsection*{1. Dijkstra's Algorithm}
+\begin{lstlisting}[language=Python, caption=Classical Dijkstra’s Algorithm]
+	def dijkstra(graph, start, end):
+	visited_edges, optimal_path = [], []
+	
+	queue = []
+	heapq.heappush(queue, (0, start, [start]))
+	
+	shortest_distance = {node: float('inf') for node in graph.nodes}
+	shortest_distance[start] = 0
+	
+	while queue:
+	current_cost, current_node, current_path = heapq.heappop(queue)
+	if current_cost > shortest_distance[current_node]:
+	continue
+	
+	if current_node == end:
+	optimal_path = current_path
+	break
+	
+	for neighbor in graph.neighbors(current_node):
+	edge_costs = [data.get('length', 1) for data in graph[current_node][neighbor].values()]
+	min_edge_cost = min(edge_costs)
+	total_cost = current_cost + min_edge_cost
+	
+	if total_cost < shortest_distance[neighbor]:
+	shortest_distance[neighbor] = total_cost
+	heapq.heappush(queue, (total_cost, neighbor, current_path + [neighbor]))
+	visited_edges.append((current_node, neighbor))
+	
+	return visited_edges, optimal_path
+\end{lstlisting}
+
+\subsubsection*{Explanation}
+\begin{itemize}
+	\item Classic shortest path algorithm, no heuristics involved.
+	\item Uses a priority queue to explore the cheapest path to each node.
+	\item Guarantees the optimal path in graphs with non-negative edge weights.
+\end{itemize}
+
+\subsection*{2. A* Search Algorithm}
+\begin{lstlisting}[language=Python, caption=A* Search with Heuristic]
+	def astar(graph, start, end):
+	def heuristic(u, v):
+	coord_u = graph.nodes[u]['x'], graph.nodes[u]['y']
+	coord_v = graph.nodes[v]['x'], graph.nodes[v]['y']
+	return ((coord_u[0] - coord_v[0]) ** 2 + (coord_u[1] - coord_v[1]) ** 2) ** 0.5
+	
+	visited_edges = []
+	queue = [(0, start, [start])]
+	shortest_distance = {node: float('inf') for node in graph.nodes}
+	shortest_distance[start] = 0
+	
+	while queue:
+	current_cost, current_node, path = heapq.heappop(queue)
+	if current_node == end:
+	return visited_edges, path
+	
+	for neighbor in graph.neighbors(current_node):
+	cost = graph[current_node][neighbor][0].get('length', 1)
+	total_cost = shortest_distance[current_node] + cost
+	
+	if total_cost < shortest_distance[neighbor]:
+	shortest_distance[neighbor] = total_cost
+	priority = total_cost + heuristic(neighbor, end)
+	heapq.heappush(queue, (priority, neighbor, path + [neighbor]))
+	visited_edges.append((current_node, neighbor))
+\end{lstlisting}
+
+\subsubsection*{Explanation}
+\begin{itemize}
+	\item Uses Euclidean distance as a heuristic to guide search.
+	\item Reduces explored nodes compared to Dijkstra.
+	\item Efficient for spatial graphs.
+\end{itemize}
+
+\subsection*{3. Bidirectional Dijkstra's Algorithm}
+\begin{lstlisting}[language=Python, caption=Bidirectional Dijkstra's Algorithm]
+	def bidirectional_dijkstra(graph, start, end):
+	visited_edges = []
+	
+	forward_queue = [(0, start)]
+	backward_queue = [(0, end)]
+	
+	shortest_distance_forward = {node: float('inf') for node in graph.nodes}
+	shortest_distance_backward = {node: float('inf') for node in graph.nodes}
+	shortest_distance_forward[start] = 0
+	shortest_distance_backward[end] = 0
+	
+	best_total_cost = float('inf')
+	meeting_node = None
+	
+	while forward_queue or backward_queue:
+	process_forward = (
+	not backward_queue or
+	(forward_queue and forward_queue[0][0] <= backward_queue[0][0])
+	)
+	
+	if process_forward:
+	current_cost, current_node = heapq.heappop(forward_queue)
+	for neighbor in graph.neighbors(current_node):
+	pass  # Update forward distances
+	else:
+	current_cost, current_node = heapq.heappop(backward_queue)
+	for neighbor in graph.neighbors(current_node):
+	pass  # Update backward distances
+	
+	if shortest_distance_backward[current_node] != float('inf'):
+	total_cost = current_cost + shortest_distance_backward[current_node]
+	if total_cost < best_total_cost:
+	best_total_cost = total_cost
+	meeting_node = current_node
+	
+	return visited_edges, optimal_path
+\end{lstlisting}
+
+\subsubsection*{Explanation}
+\begin{itemize}
+	\item Simultaneously searches from start and end nodes.
+	\item Reduces search space significantly.
+	\item Merges paths at the meeting node for optimal path.
+\end{itemize}
+
+
+
+\subsection*{4. Bidirectional A* Algorithm}
+\begin{lstlisting}[language=Python, caption=Bidirectional A* Search]
+	def bidirectional_astar(graph, start, end):
+	def heuristic(u, v):
+	coord_u = graph.nodes[u]['x'], graph.nodes[u]['y']
+	coord_v = graph.nodes[v]['x'], graph.nodes[v]['y']
+	return ((coord_u[0] - coord_v[0]) ** 2 + (coord_u[1] - coord_v[1]) ** 2) ** 0.5
+	
+	forward_queue = [(heuristic(start, end), start)]
+	backward_queue = [(heuristic(end, start), end)]
+	
+	# Similar to bidirectional Dijkstra with heuristics...
+	
+	return visited_edges, optimal_path
+\end{lstlisting}
+
+\subsubsection*{Explanation}
+\begin{itemize}
+	\item Combines bidirectional search with A* heuristic.
+	\item Highly efficient for large graphs.
+\end{itemize}
+
+\subsection*{5. Bidirectional ALT Algorithm}
+\begin{lstlisting}[language=Python, caption=ALT Preprocessing for Heuristics]
+	class ALTPreprocessor:
+	def __init__(self, graph):
+	self.landmarks = self.select_landmarks(graph, 4)
+	self.distances = self.compute_distances(graph)
+	
+	def select_landmarks(self, graph, count):
+	return random.sample(list(graph.nodes), count)
+	
+	def compute_distances(self, graph):
+	return {lm: nx.single_source_dijkstra_path_length(graph, lm) for lm in self.landmarks}
+	
+	def heuristic(self, u, v):
+	estimates = [abs(self.distances[lm][u] - self.distances[lm][v]) for lm in self.landmarks]
+	return max(estimates)
+
+	def bidirectional_alt_query(graph, start, end, alt_preprocessor):
+	visited_edges = []
+	forward_queue = [(0, start, [start])]
+	backward_queue = [(0, end, [end])]
+	
+	# Initialize distances and queues similar to bidirectional A*
+	# Use alt_preprocessor.heuristic(u, v) in both directions
+	
+	return visited_edges, optimal_path
+\end{lstlisting}
+
+\subsubsection*{Explanation}
+\begin{itemize}
+	\item Landmarks are used to compute preprocessed distance estimates.
+	\item Heuristic improves pathfinding performance.
+	\item Combines bidirectional search with ALT heuristic.
+	\item Reduces computation time and search space.
+\end{itemize}
+
+
+
+\section*{Animation Module – \texttt{animation.py}}
+
+\subsection*{Libraries Used}
+\begin{itemize}
+	\item \textbf{pygame}: Used for creating real-time graphical animations of pathfinding algorithms.
+	\item \textbf{cv2 (OpenCV)}: Likely used for video export features (used in other parts of the file).
+	\item \textbf{numpy}: For numerical computations.
+	\item \textbf{time}: To measure execution and animation durations.
+\end{itemize}
+
+\subsection*{Implementation Overview}
+The \texttt{Animator} class is responsible for visualizing the execution of various pathfinding algorithms on a real-world map using Pygame. It supports:
+\begin{itemize}
+	\item Interactive animation of pathfinding steps.
+	\item Preprocessing visualization if ALT (landmark-based) algorithms are used.
+	\item Real-time mapping from geo-coordinates to screen pixels.
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption=Core logic of Animator class]
+	import pygame
+	import time
+	import cv2
+	import numpy as np
+	
+	class Animator:
+	def __init__(self, graph, start, end, preprocessor=None):
+	self.G = graph
+	self.start_node, self.end_node = start, end
+	self.preprocessor = preprocessor
+	
+	def _common_setup(self, algorithm):
+	if self.preprocessor:
+	start_preprocess = time.time()
+	self.preprocessor._select_landmarks()
+	self.preprocessor._precompute_distances()
+	preprocessing_time = time.time() - start_preprocess
+	
+	algo_start = time.time()
+	visited_edges, optimal_path = algorithm(
+	self.G, self.start_node, self.end_node,
+	*([self.preprocessor] if self.preprocessor else [])
+	)
+	algo_time = time.time() - algo_start
+	
+	# Coordinate normalization for screen rendering
+	nodes = list(self.G.nodes(data=True))
+	xs = [data['x'] for _, data in nodes]
+	ys = [data['y'] for _, data in nodes]
+	min_x, max_x, min_y, max_y = min(xs), max(xs), min(ys), max(ys)
+	
+	screen_width, screen_height = 1280, 720
+	node_pos = {
+		node: (
+		int((data['x'] - min_x) / (max_x - min_x) * screen_width),
+		int((1 - (data['y'] - min_y) / (max_y - min_y)) * screen_height)
+		)
+		for node, data in nodes
+	}
+	
+	# Convert visited edges and optimal path to screen coordinates
+	visited_edges_screen = [(node_pos[u], node_pos[v]) for u, v in visited_edges]
+	optimal_path_edges_screen = [
+	(node_pos[optimal_path[i]], node_pos[optimal_path[i + 1]])
+	for i in range(len(optimal_path) - 1)
+	]
+	
+	return visited_edges_screen, optimal_path_edges_screen
+\end{lstlisting}
+The class begins by initializing with a graph and node data. The method \texttt{\_common\_setup()} performs the following tasks:
+\begin{itemize}
+	\item \textbf{Preprocessing:} Landmark selection and distance matrix computation if the ALT (A* with Landmarks and Triangle inequality) method is used.
+	\item \textbf{Algorithm Execution:} Executes the selected pathfinding algorithm and measures execution time.
+	\item \textbf{Normalization:} Geo-coordinates from OpenStreetMap are normalized to fit a fixed screen resolution for display.
+	\item \textbf{Rendering Data:} Converts visited edges and the optimal path into screen coordinates, preparing for graphical animation.
+\end{itemize}

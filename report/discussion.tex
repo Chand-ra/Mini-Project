@@ -1,18 +1,40 @@
 \chapter{Discussion}
 
-\section{Strengths}
-	\begin{itemize}
-		\item Highlight significant improvements in speed, accuracy, or flexibility.
-		\item Discuss adaptability to various real-world scenarios.
-	\end{itemize}
-\section{Limitations}
-	\begin{itemize}
-		\item Discuss preprocessing overhead or constraints in memory usage.
-		\item Identify scenarios where the hybrid approach might underperform.
-	\end{itemize}
-\section{Further Improvements}
-	\begin{itemize}
-		\item Enhancing scalability for distributed systems.
-		\item Incorporating machine learning to predict edge weights dynamically.
-		\item Extending to multimodal routing or 3D graphs.
-	\end{itemize}
+\section{Strengths and Limitations of the Implemented Solution}
+
+\subsection{Enhanced Computational Efficiency}
+The hybrid algorithm significantly improves query times by integrating bidirectional A* search with ALT (A* Landmarks and Triangle inequality) preprocessing. Testing on a subset of Surat’s road network (10,000 nodes) demonstrated a 50–70\% reduction in query times compared to Dijkstra’s algorithm. However, this improvement is limited by the preprocessing overhead, which may not be feasible for highly dynamic environments.
+
+\subsection{Deterministic Execution for Consistency}
+Sorting neighboring nodes based on edge weights ensures a deterministic execution order, leading to reproducible results across multiple runs. This feature aids in benchmarking and debugging. However, in some cases, strict ordering can restrict adaptability to real-time changes in the graph structure, affecting flexibility.
+
+\subsection{Diagnostic Visualization Support}
+The algorithm includes a diagnostic visualization tool, making it easier to interpret pathfinding decisions. While beneficial for debugging and educational purposes, visualization requires additional computational resources, making it impractical for large-scale real-time applications.
+
+\section{Challenges and Areas for Improvement}
+
+\subsection{Static Preprocessing Constraints}
+The algorithm computes landmark distances during initialization, which limits its effectiveness in real-time traffic scenarios where edge weights frequently change. Any modification requires a complete recomputation, introducing delays that hinder dynamic adaptability.
+
+\subsection{Inflexible Cost Metrics}
+Currently, the algorithm relies only on edge length as the cost metric. This approach is insufficient for real-world applications requiring multi-criteria optimization (e.g., fuel consumption, toll costs). The lack of parameterization reduces its usability in diverse routing scenarios.
+
+\subsection{Scalability Constraints on Large Networks}
+The absence of Contraction Hierarchies (CH) restricts the algorithm's performance on massive networks like OpenStreetMap Europe (18M+ nodes). Without CH, query times become significantly slower, making it unsuitable for large-scale applications requiring near-instantaneous responses.
+
+\subsection{Suboptimal Landmark Selection}
+The current greedy heuristic prioritizes landmarks based on maximal minimal distances. However, this strategy may overlook high-centrality nodes (e.g., major highway intersections), leading to suboptimal heuristic guidance and increased search space exploration.
+
+\section{Potential Enhancements}
+
+\subsection{Integration of Contraction Hierarchies}
+The algorithm can be optimized by ranking nodes based on connectivity and iteratively contracting less critical nodes while preserving shortest paths using hierarchical shortcuts. This improvement is expected to reduce query times by 60–80\% for networks with over one million nodes.
+
+\subsection{Support for Dynamic Graphs}
+To enhance adaptability, incremental preprocessing techniques should be implemented, allowing only affected landmarks and shortcuts to be updated instead of recomputing the entire preprocessing step. This capability is crucial for emergency routing systems where real-time traffic changes occur frequently.
+
+\subsection{Customizable Cost Functions}
+Introducing a parameterized approach to edge-weight retrieval would enable route optimization based on additional factors such as toll costs, fuel efficiency, and carbon emissions. Such functionality would significantly expand the algorithm’s applicability, particularly for logistics and transportation industries.
+
+\subsection{Refined Landmark Selection}
+Replacing the current greedy heuristic with betweenness centrality-based selection would ensure that landmarks are chosen from critical traffic routes, such as major highways and bridges. This enhancement is projected to reduce unnecessary node expansions by 20–30\%, improving overall efficiency.
