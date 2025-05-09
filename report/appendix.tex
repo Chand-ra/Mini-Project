@@ -22,23 +22,6 @@
 		\item Summing over all vertices, the total edge-processing time is $O(E)$.
 	\end{itemize}
 		Thus, the overall time complexity is $O(V+E)$.
-	\section{Proof of correctness for Bellman-Ford$^{\cite{Bellman-ford-ref-one}}$}\label{appendix:bellford:correctness}
-	We'll prove the correctness of Bellman-Ford algorithm using mathematical induction.
-	\begin{itemize}
-		\item \textit{Inductive hypothesis}: After $k$ iterations, $distance[v]$ is the length of the shortest path from $s$ to $v$ using at most $k$ edges.
-		\item \textit{Base case}: After 0 iterations, $distance[s]=0$ (correct), and $distance[v] = \infty$ for all $v \neq s$ (no paths have been explored yet).
-		\item \textit{Induction step}: Consider the $(k+1)^{th}$ iteration. For each edge $(u,v)$, if $distance[u]+w(u,v)<distance[v]$, then $distance[v]$ is updated to $distance[u]+w(u,v)$. This ensures that after $k+1$ iterations, $distance[v]$ is the length of the shortest path using at most $k+1$ edges.
-		\item \textit{Conclusion}: After $V-1$ iterations, all shortest paths with at most $V-1$ edges have been found. Since a shortest path in a graph with $V$ vertices cannot have more than $V-1$ edges, the algorithm is correct.
-		\item \textit{Negative cycle detection}: After $V - 1$ iterations, if any $distance[v]$ can still be improved (i.e. $distance[u]+w(u,v)<distance[v]$ for some edge $(u,v)$), then the graph contains a negative-weight cycle reachable from $s$.
-	\end{itemize}
-	\section{Proof of complexity for Bellman-Ford$^{\cite{Bellman-ford-ref-one}}$}\label{appendix:bellford:complexity}
-	Let us assume a graph $G(V, E)$ with $V$ vertices and $E$ edges.
-	\begin{itemize}
-		\item Set $distance[s]=0$ and $distance[v]=\infty$ for all $v \neq s$. This takes $O(V)$ time.
-		\item Relax all $E$ edges, repeated $V - 1$ times. Each relaxation takes $O(1)$ time. This takes a total time of $O(V \cdot E)$.
-		\item For negative cycle detection, relax all the edges once more. This takes $O(E)$ time.
-	\end{itemize}
-	The dominant term is the relaxation step, which takes $O(V \cdot E)$ time, hence the overall complexity of the algorithm is $O(V \cdot E)$.
 	\section{Proof of correctness for Dijkstra's$^{\cite{Dijikstra-ref-one}}$}\label{appendix:dijkstra:correctness}
 	We'll prove the correctness of Dijkstra's algorithm using mathematical induction.
 	\begin{itemize}
@@ -156,25 +139,6 @@ Since $ h(v) $ is both admissible and consistent, the ALT algorithm guarantees o
 			\end{itemize}
 		\item Precompute Shortest Path Distances from Landmarks: For $k$ landmarks, we need to perform Dijkstra’s algorithm $k$ times, one for each landmark, making the total preprocessing time complexity is $O(k \cdot (|V| + |E|) \log |V|)$.
 		\item Query Phase Complexity: The A* search algorithm with ALT uses the ALT heuristic $ h(v) $ instead of a simple heuristic (like Euclidean distance). The time complexity of the A* search depends on the number of nodes expanded during the search and the priority queue operations. In the worst case, the complexity is $ O((|V| + |E|) \log |V|) $. The average query time is generally much faster, but it is difficult to bound precisely without empirical data.		
-	\end{itemize}
-
-\section{Proof of correctness for Hub Labellling$^{\cite{HL-ref-one}}$}\label{appendix:Hub Labelling:correctness}
-	\begin{itemize}
-		\item During the preprocessing phase of the Hub Labeling algorithm, we ensure that for any pair of nodes $ u $ and $ v $, their labels $ L(u) $ and $ L(v) $ share at least one common hub $ h $ that lies on the shortest path between $ u $ and $ v $.
-		\item Formally, for any two nodes $ u, v \in V $, there exists a hub $ h \in L(u) \cap L(v) $ such that $ h $ lies on the shortest path between $ u $ and $ v $, i.e., the path $ u \to h \to v $ is a valid shortest path. Thus, this \textit{Label Cover Property} ensures that the correct hubs are selected in the query phase and the algorithm can always compute the shortest path.
-		\item For any two nodes $ u $ and $ v $, during the query phase, the algorithm scans their labels $ L(u) $ and  $ L(v) $ to find the hub $ h $ that minimizes the expression $ d(u, h) + d(h, v) $. This is equivalent to finding the shortest path between $ u $  and $ v $ by traversing through a common hub $ h $.
-		\item Since $ h $ lies on the shortest path between $ u $ and $ v $ (by the Label Cover Property), the value $ d(u, h) + d(h, v) $ is guaranteed to be the shortest path distance between $ u $ and $ v $.
-		\item Therefore, the Hub Labeling algorithm correctly computes the shortest path for any query $ (u, v) $, as it always finds the optimal hub $ h $ and ensures that the sum of distances $ d(u, h) + d(h, v) $ corresponds to the actual shortest path distance.
-	\end{itemize}
-
-\section{Proof of complexity for Hub Labelling$^{\cite{HL-ref-one}}$}\label{appendix:Hub Labelling:Complexity}
-	\begin{itemize}
-		\item For each node $v$, compute the forward and backward labels using Dijkstra's algorithm or a similar shortest path algorithm.
-		\item The time complexity for computing labels for all nodes is $O(V \cdot (V+E)\log V)$, where $V$ is the number of nodes and $E$ is the number of edges.
-		\item The selection of hubs can be done using various strategies, such as selecting nodes with high centrality or using a greedy algorithm. The time complexity for hub selection is $O(VlogV)$.
-		\item For a given query $(s,t)$, the forward label of $s$ and the backward label of $t$ are intersected to find the shortest path distance.
-		\item The time complexity for label intersection is $O(|L_f(s)| + |L_b(t)|)$, where $|L_f(s)|$ and $|L_b(t)|$ are the sizes of the forward and backward labels, respectively.
-		\item Each node stores a forward label and a backward label. The space complexity for storing all labels is $O(V \cdot L)$, where $L$ is the average label size.
 	\end{itemize}
 	
 \end{appendices}

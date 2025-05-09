@@ -32,31 +32,6 @@
 				\item BFS works well for large, sparse graphs.
 				\item BFS fails for shortest-path problems in weighted graphs, which are more useful when modelling real world scenarios.
 			\end{itemize}
-	\subsection{Bellman-ford Algorithm}
-		\subsubsection{Introduction}
-			The Bellman–Ford algorithm is a shortest-path algorithm that utilizes dynamic programming to compute shortest paths from a single source vertex to all of the other vertices in a weighted, directed graph. It was first published by Richard Bellman (1958) and Lester Ford Jr. (1956), hence its name.
-		\subsubsection{Algorithm}
-			\begin{enumerate}
-				\item Create an array $distance$ of size $V$ to store the shortest path distances.
-				\item Assign $distance[u] = \infty$ for all vertices except the source vertex $s$, where $distance[s] = 0$.
-				\item Repeat $V - 1$ times:
-					\begin{itemize}
-						\item For each edge $(u,v) \in E$, if $distance[u] + w(u,v) < distance[v]$ update $distance[v]=distance[u]+w(u,v)$.
-					\end{itemize}
-				\item Now to detect a negative cycle, for each edge $(u,v) \in E$, if $distance[u] + w(u,v) < distance[v]$, report that a negative-weight cycle exists.
-				\item If no negative-weight cycle is detected, Return the $distance$ array as the shortest path distances.
-			\end{enumerate}
-			Refer to \textbf{Appendix \ref{appendix:bellford:correctness}} for a formal proof of correctness of this algorithm.
-		\subsubsection{Complexity}
-			When finding the shortest path from a source vertex to every other vertex in a graph, the worst-case time complexity for the Bellman-Ford algorithm is $O(V \cdot E)$ (see \textbf{Appendix \ref{appendix:bellford:complexity}} for a formal proof). \medskip
-			
-			The space complexity for Bellman-Ford is $O(V)$ since we use an array of size $V$ to store all the shortest-path distances.
-		\subsubsection{Pros and Cons}
-			\begin{itemize}
-				\item Suitable for applications requiring negative weight handling, in which case it can detect the existence of a negative cycle.
-				\item The Bellman-Ford algorithm is more complex than Dijkstra's algorithm.
-				\item Much slower compared to Dijkstra's algorithm.
-			\end{itemize}
 	\subsection{Dijkstra's Algorithm}
 		\subsubsection{Introduction}
 			Dijkstra's algorithm is a greedy algorithm used to find the shortest paths from a single source vertex to all other vertices in a weighted graph with non-negative edge weights. It was conceived by computer scientist Edsger W. Dijkstra in 1956 and published three years later.
@@ -230,37 +205,6 @@
 			\item Significant preprocessing time and memory usage, making it inefficient for frequently changing networks.
 			\item Properly chosen landmarks enhance performance, but poor selection can degrade efficiency, affecting search quality.
 		\end{itemize}
-	\subsection{Hub Labeling}
-		\subsubsection{Introduction}
-		Hub Labeling (HL) is a preprocessing-based technique for efficient shortest path queries in graphs. It assigns labels to nodes, storing distances to selected hubs, enabling constant-time distance queries.
-		
-			\subsubsection{Algorithm}
-				\begin{itemize}
-					\item \textbf{Preprocessing phase}: Select a subset \( H \subseteq V \) of \( k \) nodes as hubs, based on heuristics such as high-degree nodes or random selection. For each $v \in V$, compute the shortest path distances to each hub $h \in H$, i.e., $d(v, h)$, using Dijkstra’s algorithm or another shortest path algorithm and store the distances in the hub label of node $ v $, denoted as:
-					$L(v) = \{ d(v, h) \mid h \in H \}$.
-					\item \textbf{Query phase}: Given a query between nodes $ s $ and $ t $, the shortest path $ d(s, t) $ can be computed as:
-					\begin{equation*}
-						d(s,t) = \min_{h \in H} \left( d(s,h) + d(h,t) \right)
-					\end{equation*}
-					where $d(s, h)$ is the distance from $s$ to hub $h$, and $d(h, t)$ is the distance from hub $h$ to $t$.
-				\end{itemize}
-			See \textbf{Appendix \ref{appendix:Hub Labelling:correctness}} for a formal proof of correctness of this algorithm.
-				\subsubsection{Complexity}
-					\begin{itemize}
-						\item Preprocessing Time Complexity:  $ O(k \cdot (|V| + |E|) \log |V|) $
-						\item Query Time Complexity:  $ O(k) $
-						\item Space Complexity:  $ O(k \cdot |V|) $
-					\end{itemize} 
-			Please refer to \textbf{Appendix \ref{appendix:Hub Labelling:Complexity}} for a formal proof of complexity. 
-				
-				\subsubsection{Pros and Cons}
-				\begin{itemize}
-					\item Precomputed hub labels enable constant-time shortest path lookups.
-					\item Building hub labels requires extensive computation and storage, making it unsuitable for graphs with frequent updates.
-					\item Works well for large static graphs but demands significant memory.
-				\end{itemize}
-
-% Refer figure \ref{fig:label}.
 
 \section{Summary of Findings}
 	
